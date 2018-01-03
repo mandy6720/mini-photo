@@ -172,6 +172,13 @@ button {
   padding-bottom: 10px;
   border: none;
   position: relative;
+  &.half-width {
+    width: 47%;
+    display: inline-block;
+    &#width {
+      margin-right: 5%;
+    }
+  }
 }
 .qs_container_selected {
   //

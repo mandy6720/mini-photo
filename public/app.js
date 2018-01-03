@@ -186,10 +186,15 @@ exports.default = {
     var layersImgContainer = document.createElement("div");
     layersImgContainer.id = "layers-img";
     panel.addElement('', layersImgContainer);
+    this.addLayers();
 
     panel.addDropDown('Layer Select', ['Background', 'Background Graphic', 'Foreground', 'Foreground Graphic'], this.onSelectLayer.bind(this));
 
-    this.addLayers();
+    panel.addNumber('Width', 0, this.documentData !== null ? this.documentData.workspaceSize.x : 5000);
+    panel.addNumber('Height', 0, this.documentData !== null ? this.documentData.workspaceSize.x : 2000);
+    this.formatWidthHeightInputs();
+
+    panel.addDropDown('Background Color', ['Light blue', 'Pink', 'Grey', 'Green'], this.onSelectColor.bind(this));
   },
   addLayers: function addLayers() {
     var parent = document.getElementById('layers-img');
@@ -204,8 +209,26 @@ exports.default = {
       parent.append(el);
     });
   },
+  formatWidthHeightInputs: function formatWidthHeightInputs() {
+    var inputsArr = document.getElementsByClassName('qs_container');
+    var widthElem = inputsArr[2];
+    var heightElem = inputsArr[3];
+    widthElem.id = 'width';
+    widthElem.classList += " half-width";
+    heightElem.id = 'height';
+    heightElem.classList += " half-width";
+  },
+  setLayerImg: function setLayerImg(layer) {
+    console.log('Set layer to', layer);
+    var layerElems = document.getElementsByClassName('layer');
+    console.log(layerElems);
+    _lodash2.default.forEach(layerElems, function (item) {
+      item.classList = 'layer';
+    });
+    document.getElementById(layer).classList += ' selected';
+  },
   onSelectLayer: function onSelectLayer(info) {
-    console.log('Layer selected!', info.value);
+    console.log('Layer selected!', this.documentData);
     switch (info.value) {
       case 'Background':
         this.setLayerImg('background');
@@ -223,14 +246,8 @@ exports.default = {
         break;
     }
   },
-  setLayerImg: function setLayerImg(layer) {
-    console.log('Set layer to', layer);
-    var layerElems = document.getElementsByClassName('layer');
-    console.log(layerElems);
-    _lodash2.default.forEach(layerElems, function (item) {
-      item.classList = 'layer';
-    });
-    document.getElementById(layer).classList += ' selected';
+  onSelectColor: function onSelectColor(info) {
+    console.log('Selected color', info.value);
   }
 };
 });

@@ -132,6 +132,11 @@ button {
   padding-bottom: 10px;
   border: none;
   position: relative; }
+  .qs_container.half-width {
+    width: 47%;
+    display: inline-block; }
+    .qs_container.half-width#width {
+      margin-right: 5%; }
 
 /*========== range ==========*/
 .qs_range {
