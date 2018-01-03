@@ -452,3 +452,35 @@ button {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+// Layers Sprite 
+#layers-img {
+  width: 200px;
+  height: 170px;;
+  position: relative;
+  #foreground, #background, #fg-graphic, #bg-graphic {
+    background-image: url('img/layer_states.png');
+    background-repeat: no-repeat;
+    width: 200px;
+    height: 150px;
+    position: absolute;
+    &.layer {
+      opacity: 0;
+      &.selected {
+        opacity: 1;
+      }
+    }
+  }
+  #fg-graphic {
+    background-position: -600px 0px;
+  }
+  #bg-graphic {
+    background-position: -200px 0px;
+  }
+  #foreground {
+    background-position: -400px 0px;
+  }
+  #background {
+    background-position: 0px 0px;
+  }
+}

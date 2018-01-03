@@ -148,7 +148,94 @@ var __makeRelativeRequire = function(require, mappings, pref) {
     return require(name);
   }
 };
-require.register("app.js", function(exports, require, module) {
+require.register("MainPanel.js", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _quicksettings = require('quicksettings');
+
+var _quicksettings2 = _interopRequireDefault(_quicksettings);
+
+var _util = require('./util');
+
+var _util2 = _interopRequireDefault(_util);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+  panel: null,
+  documentData: null,
+
+  handleChange: function handleChange() {
+    console.log("changed document");
+  },
+  handleChooseBackgroundImage: function handleChooseBackgroundImage(fileObject) {
+    console.log("selected background image", fileObject);
+  },
+
+  init: function init(rootElem) {
+    var panel = _quicksettings2.default.create(5, 5, 'Layer', rootElem);
+
+    var layersImgContainer = document.createElement("div");
+    layersImgContainer.id = "layers-img";
+    panel.addElement('', layersImgContainer);
+
+    panel.addDropDown('Layer Select', ['Background', 'Background Graphic', 'Foreground', 'Foreground Graphic'], this.onSelectLayer.bind(this));
+
+    this.addLayers();
+  },
+  addLayers: function addLayers() {
+    var parent = document.getElementById('layers-img');
+    var layers = ['background', 'bg-graphic', 'foreground', 'fg-graphic'];
+    layers.forEach(function (layer, index) {
+      var el = document.createElement("div");
+      el.id = layer;
+      el.classList = 'layer';
+      if (index == 0) {
+        el.className += ' selected';
+      }
+      parent.append(el);
+    });
+  },
+  onSelectLayer: function onSelectLayer(info) {
+    console.log('Layer selected!', info.value);
+    switch (info.value) {
+      case 'Background':
+        this.setLayerImg('background');
+        break;
+      case 'Background Graphic':
+        this.setLayerImg('bg-graphic');
+        break;
+      case 'Foreground':
+        this.setLayerImg('foreground');
+        break;
+      case 'Foreground Graphic':
+        this.setLayerImg('fg-graphic');
+        break;
+      default:
+        break;
+    }
+  },
+  setLayerImg: function setLayerImg(layer) {
+    console.log('Set layer to', layer);
+    var layerElems = document.getElementsByClassName('layer');
+    console.log(layerElems);
+    _lodash2.default.forEach(layerElems, function (item) {
+      item.classList = 'layer';
+    });
+    document.getElementById(layer).classList += ' selected';
+  }
+};
+});
+
+;require.register("app.js", function(exports, require, module) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -162,6 +249,10 @@ var _quicksettings2 = _interopRequireDefault(_quicksettings);
 var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
+
+var _MainPanel = require('./MainPanel');
+
+var _MainPanel2 = _interopRequireDefault(_MainPanel);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -205,6 +296,10 @@ var App = {
     _quicksettings2.default.useExtStyleSheet();
 
     this.fitCanvasToWindow();
+
+    // inset panel here
+    _MainPanel2.default.init(rootElem);
+    _MainPanel2.default.documentData = this.documentData;
   },
   fitCanvasToWindow: function fitCanvasToWindow() {
     this.canvasElem.width = this.rootElem.clientWidth;
@@ -245,7 +340,87 @@ function init() {
 document.addEventListener('DOMContentLoaded', init);
 });
 
-require.register("watson-colors.js", function(exports, require, module) {
+require.register("util.js", function(exports, require, module) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _lodash = require("lodash");
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+	createButton: function createButton(name, className, action) {
+		var button = document.createElement("button");
+		button.innerText = name;
+		button.className = "qs_button " + className;
+		button.onclick = action;
+		return button;
+	},
+	createButtonGroup: function createButtonGroup(buttonElems, className) {
+		var groupDiv = document.createElement("div");
+		groupDiv.className = className;
+		_lodash2.default.each(buttonElems, function (button) {
+			groupDiv.appendChild(button);
+		});
+		return groupDiv;
+	},
+	setButtonEnabled: function setButtonEnabled(buttonElem, enabled) {
+		if (enabled) {
+			buttonElem.removeAttribute('disabled');
+			buttonElem.classList.remove('disabled');
+		} else {
+			buttonElem.setAttribute('disabled', true);
+			buttonElem.classList.add('disabled');
+		}
+	},
+	createSwatchPicker: function createSwatchPicker(swatches, clickHandler) {
+		var container = document.createElement("div");
+		container.className = "swatch-picker";
+
+		_lodash2.default.each(swatches, function (swatch) {
+			var swatchElem = document.createElement("div");
+			swatchElem.className = "color-swatch";
+			swatchElem.setAttribute("style", "background-color: " + swatch.color);
+			swatchElem.setAttribute("data-swatch", swatch.color);
+			swatchElem.onclick = function (e) {
+				clickHandler(swatch, swatchElem);
+			};
+			container.appendChild(swatchElem);
+		});
+		return container;
+	},
+	addSwatchHighlightByIndex: function addSwatchHighlightByIndex(swatchpicker, index) {
+		if (swatchpicker.children.length > 0) {
+			this.addSwatchHighlight(swatchpicker.children[0]);
+		}
+	},
+	addSwatchHighlight: function addSwatchHighlight(swatchElem) {
+		swatchElem.classList.add("selected");
+	},
+	removeSwatchHighlight: function removeSwatchHighlight(swatchElem) {
+		swatchElem.classList.remove("selected");
+	},
+	addCustomTitle: function addCustomTitle(qsPanel, title, refName) {
+		// it was important for the design to remove the separator
+		// and treat titles consistently.
+		// this is a way of achieving that.
+		refName = refName || title + "_title";
+		var div = document.createElement("div");
+		div.className = "custom-title";
+		div.innerText = title;
+		qsPanel.addElement(refName, div);
+		qsPanel.hideTitle(refName);
+		return refName;
+	}
+};
+});
+
+;require.register("watson-colors.js", function(exports, require, module) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {

@@ -401,5 +401,28 @@ button {
   overflow: hidden;
   text-overflow: ellipsis; }
 
+#layers-img {
+  width: 200px;
+  height: 170px;
+  position: relative; }
+  #layers-img #foreground, #layers-img #background, #layers-img #fg-graphic, #layers-img #bg-graphic {
+    background-image: url("img/layer_states.png");
+    background-repeat: no-repeat;
+    width: 200px;
+    height: 150px;
+    position: absolute; }
+    #layers-img #foreground.layer, #layers-img #background.layer, #layers-img #fg-graphic.layer, #layers-img #bg-graphic.layer {
+      opacity: 0; }
+      #layers-img #foreground.layer.selected, #layers-img #background.layer.selected, #layers-img #fg-graphic.layer.selected, #layers-img #bg-graphic.layer.selected {
+        opacity: 1; }
+  #layers-img #fg-graphic {
+    background-position: -600px 0px; }
+  #layers-img #bg-graphic {
+    background-position: -200px 0px; }
+  #layers-img #foreground {
+    background-position: -400px 0px; }
+  #layers-img #background {
+    background-position: 0px 0px; }
+
 
 /*# sourceMappingURL=app.css.map*/

@@ -1,6 +1,8 @@
 import QuickSettings from 'quicksettings';
 import _ from 'lodash';
 
+import MainPanel from './MainPanel';
+
 var App = {
   // elems
 	rootElem : null,
@@ -40,7 +42,11 @@ var App = {
 
     QuickSettings.useExtStyleSheet();
 
-		this.fitCanvasToWindow();
+    this.fitCanvasToWindow();
+    
+    // inset panel here
+    MainPanel.init(rootElem);
+    MainPanel.documentData = this.documentData;
   },
 
   fitCanvasToWindow() {
