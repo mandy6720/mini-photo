@@ -172,9 +172,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 exports.default = {
   panel: null,
   documentData: null,
+  selectedLayer: null,
 
   handleChange: function handleChange() {
     console.log("changed document");
+  },
+  handleSelectLayer: function handleSelectLayer() {
+    console.log("changed layer");
   },
   handleChooseBackgroundImage: function handleChooseBackgroundImage(fileObject) {
     console.log("selected background image", fileObject);
@@ -182,6 +186,7 @@ exports.default = {
 
   init: function init(rootElem) {
     var panel = _quicksettings2.default.create(5, 5, 'Layer', rootElem);
+    console.log(this.selectedLayer);
 
     var layersImgContainer = document.createElement("div");
     layersImgContainer.id = "layers-img";
@@ -190,6 +195,7 @@ exports.default = {
 
     panel.addDropDown('Layer Select', ['Background', 'Background Graphic', 'Foreground', 'Foreground Graphic'], this.onSelectLayer.bind(this));
 
+    // setting the layer changes the options
     panel.addNumber('Width', 0, this.documentData !== null ? this.documentData.workspaceSize.x : 5000);
     panel.addNumber('Height', 0, this.documentData !== null ? this.documentData.workspaceSize.x : 2000);
     this.formatWidthHeightInputs();
@@ -232,15 +238,19 @@ exports.default = {
     switch (info.value) {
       case 'Background':
         this.setLayerImg('background');
+        this.handleSelectLayer('background');
         break;
       case 'Background Graphic':
         this.setLayerImg('bg-graphic');
+        this.handleSelectLayer('bg-graphic');
         break;
       case 'Foreground':
         this.setLayerImg('foreground');
+        this.handleSelectLayer('foreground');
         break;
       case 'Foreground Graphic':
         this.setLayerImg('fg-graphic');
+        this.handleSelectLayer('fg-graphic');
         break;
       default:
         break;
@@ -294,9 +304,7 @@ var App = {
   canvasContext: null,
   hiResContext: null,
   hiResScale: 4,
-  isShowingSettings: true,
-  isShowingMagnets: true,
-  isShowingMasks: true,
+  selectedLayer: 'background',
 
   init: function init(rootElem) {
     var canvasElem = document.getElementById("app-canvas");
@@ -317,6 +325,8 @@ var App = {
     // inset panel here
     _MainPanel2.default.init(rootElem);
     _MainPanel2.default.documentData = this.documentData;
+    _MainPanel2.default.selectedLayer = this.selectedLayer;
+    _MainPanel2.default.handleSelectLayer = this.handleSelectLayer.bind(this);
   },
   fitCanvasToWindow: function fitCanvasToWindow() {
     this.canvasElem.width = this.rootElem.clientWidth;
@@ -330,6 +340,10 @@ var App = {
 
     this.svgElem.setAttribute('width', this.canvasElem.width);
     this.svgElem.setAttribute('height', this.canvasElem.height);
+  },
+  handleSelectLayer: function handleSelectLayer(info) {
+    console.log('[app.js] Layer selected', info);
+    // destory panel in MainPanel and build new one according to layer selected
   }
 };
 

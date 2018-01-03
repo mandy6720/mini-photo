@@ -24,9 +24,7 @@ var App = {
 	canvasContext : null,
   hiResContext : null,
   hiResScale : 4,
-  isShowingSettings : true,
-  isShowingMagnets : true,
-  isShowingMasks : true,
+  selectedLayer : 'background',
 
   init(rootElem) {
     var canvasElem = document.getElementById("app-canvas");
@@ -47,6 +45,8 @@ var App = {
     // inset panel here
     MainPanel.init(rootElem);
     MainPanel.documentData = this.documentData;
+    MainPanel.selectedLayer = this.selectedLayer;
+    MainPanel.handleSelectLayer = this.handleSelectLayer.bind(this);
   },
 
   fitCanvasToWindow() {
@@ -61,6 +61,10 @@ var App = {
 
     this.svgElem.setAttribute('width', this.canvasElem.width);
     this.svgElem.setAttribute('height', this.canvasElem.height);
+  },
+  handleSelectLayer(info) {
+    console.log('[app.js] Layer selected', info);
+    // destory panel in MainPanel and build new one according to layer selected
   }
 }
 

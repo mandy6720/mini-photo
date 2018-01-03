@@ -5,13 +5,16 @@ import qsUtil from './util';
 
 export default {
   panel : null,
-	documentData : null,
+  documentData : null,
+  selectedLayer: null,
 
-	handleChange : function() {console.log("changed document")},
+  handleChange : function() {console.log("changed document")},
+  handleSelectLayer: function() {console.log("changed layer")},
   handleChooseBackgroundImage : function(fileObject){console.log("selected background image", fileObject)},
 
 	init(rootElem) {
     var panel = QuickSettings.create(5, 5, 'Layer', rootElem);
+    console.log(this.selectedLayer)
 
     var layersImgContainer = document.createElement("div");
 		layersImgContainer.id = "layers-img";
@@ -24,6 +27,7 @@ export default {
       this.onSelectLayer.bind(this)
     ); 
 
+    // setting the layer changes the options
     panel.addNumber('Width', 0, this.documentData !== null ? this.documentData.workspaceSize.x : 5000);
     panel.addNumber('Height', 0, this.documentData !== null ? this.documentData.workspaceSize.x : 2000);
     this.formatWidthHeightInputs();
@@ -70,15 +74,19 @@ export default {
     switch (info.value) {
       case 'Background':
         this.setLayerImg('background');
+        this.handleSelectLayer('background');
         break;
       case 'Background Graphic':
         this.setLayerImg('bg-graphic');
+        this.handleSelectLayer('bg-graphic');
         break;
       case 'Foreground':
         this.setLayerImg('foreground');
+        this.handleSelectLayer('foreground');
         break;
       case 'Foreground Graphic':
         this.setLayerImg('fg-graphic');
+        this.handleSelectLayer('fg-graphic');
         break;
       default:
         break;

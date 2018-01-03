@@ -368,7 +368,7 @@ button {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  color: #e2e2e2;
+  color: #222222;
   width: 100%;
   height: 24px;
   border: 1px solid #e2e2e2;
@@ -378,6 +378,7 @@ button {
 }
 .qs_select option {
   font-size: 14px;
+  color: #222222;
 }
 .qs_select::-ms-expand {
   display: none;
