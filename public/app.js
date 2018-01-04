@@ -148,7 +148,97 @@ var __makeRelativeRequire = function(require, mappings, pref) {
     return require(name);
   }
 };
-require.register("MainPanel.js", function(exports, require, module) {
+require.register("BackgroundLayer.js", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _quicksettings = require('quicksettings');
+
+var _quicksettings2 = _interopRequireDefault(_quicksettings);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+  createLayer: function createLayer(panel, documentData) {
+    panel.addNumber('Width', 0, documentData !== null ? documentData.workspaceSize.x : 5000);
+    panel.addNumber('Height', 0, documentData !== null ? documentData.workspaceSize.x : 2000);
+    this.formatWidthHeightInputs();
+
+    panel.addDropDown('Background Color', ['Light blue', 'Pink', 'Grey', 'Green'], this.onSelectColor.bind(this));
+  },
+  formatWidthHeightInputs: function formatWidthHeightInputs() {
+    var inputsArr = document.getElementsByClassName('qs_container');
+    var widthElem = inputsArr[2];
+    var heightElem = inputsArr[3];
+    widthElem.id = 'width';
+    widthElem.classList += " half-width";
+    heightElem.id = 'height';
+    heightElem.classList += " half-width";
+  },
+  onSelectColor: function onSelectColor(info) {
+    console.log('Selected color', info.value);
+  }
+};
+});
+
+;require.register("ForegroundLayer.js", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _quicksettings = require('quicksettings');
+
+var _quicksettings2 = _interopRequireDefault(_quicksettings);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+  createLayer: function createLayer(panel, documentData) {
+    panel.addText('FG', "hi i'm the foreground");
+    console.log(panel, documentData);
+  }
+};
+});
+
+;require.register("GraphicLayer.js", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _quicksettings = require('quicksettings');
+
+var _quicksettings2 = _interopRequireDefault(_quicksettings);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+  createLayer: function createLayer(panel, documentData) {
+    console.log(panel, documentData);
+    panel.addText('FG', "hi i'm the graphic layer");
+  }
+};
+});
+
+;require.register("MainPanel.js", function(exports, require, module) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -167,17 +257,30 @@ var _util = require('./util');
 
 var _util2 = _interopRequireDefault(_util);
 
+var _BackgroundLayer = require('./BackgroundLayer');
+
+var _BackgroundLayer2 = _interopRequireDefault(_BackgroundLayer);
+
+var _ForegroundLayer = require('./ForegroundLayer');
+
+var _ForegroundLayer2 = _interopRequireDefault(_ForegroundLayer);
+
+var _GraphicLayer = require('./GraphicLayer');
+
+var _GraphicLayer2 = _interopRequireDefault(_GraphicLayer);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = {
   panel: null,
   documentData: null,
-  selectedLayer: null,
+  selectedLayer: 'background',
+  rootElem: null,
 
   handleChange: function handleChange() {
     console.log("changed document");
   },
-  handleSelectLayer: function handleSelectLayer() {
+  updateCanvas: function updateCanvas() {
     console.log("changed layer");
   },
   handleChooseBackgroundImage: function handleChooseBackgroundImage(fileObject) {
@@ -186,21 +289,9 @@ exports.default = {
 
   init: function init(rootElem) {
     var panel = _quicksettings2.default.create(5, 5, 'Layer', rootElem);
-    console.log(this.selectedLayer);
-
-    var layersImgContainer = document.createElement("div");
-    layersImgContainer.id = "layers-img";
-    panel.addElement('', layersImgContainer);
-    this.addLayers();
-
-    panel.addDropDown('Layer Select', ['Background', 'Background Graphic', 'Foreground', 'Foreground Graphic'], this.onSelectLayer.bind(this));
-
-    // setting the layer changes the options
-    panel.addNumber('Width', 0, this.documentData !== null ? this.documentData.workspaceSize.x : 5000);
-    panel.addNumber('Height', 0, this.documentData !== null ? this.documentData.workspaceSize.x : 2000);
-    this.formatWidthHeightInputs();
-
-    panel.addDropDown('Background Color', ['Light blue', 'Pink', 'Grey', 'Green'], this.onSelectColor.bind(this));
+    this.panel = panel;
+    this.rootElem = rootElem;
+    this.addCommonInputs(panel);
   },
   addLayers: function addLayers() {
     var parent = document.getElementById('layers-img');
@@ -215,49 +306,79 @@ exports.default = {
       parent.append(el);
     });
   },
-  formatWidthHeightInputs: function formatWidthHeightInputs() {
-    var inputsArr = document.getElementsByClassName('qs_container');
-    var widthElem = inputsArr[2];
-    var heightElem = inputsArr[3];
-    widthElem.id = 'width';
-    widthElem.classList += " half-width";
-    heightElem.id = 'height';
-    heightElem.classList += " half-width";
-  },
   setLayerImg: function setLayerImg(layer) {
     console.log('Set layer to', layer);
     var layerElems = document.getElementsByClassName('layer');
-    console.log(layerElems);
     _lodash2.default.forEach(layerElems, function (item) {
       item.classList = 'layer';
     });
     document.getElementById(layer).classList += ' selected';
   },
   onSelectLayer: function onSelectLayer(info) {
-    console.log('Layer selected!', this.documentData);
     switch (info.value) {
       case 'Background':
-        this.setLayerImg('background');
         this.handleSelectLayer('background');
         break;
       case 'Background Graphic':
-        this.setLayerImg('bg-graphic');
         this.handleSelectLayer('bg-graphic');
         break;
       case 'Foreground':
-        this.setLayerImg('foreground');
         this.handleSelectLayer('foreground');
         break;
       case 'Foreground Graphic':
-        this.setLayerImg('fg-graphic');
         this.handleSelectLayer('fg-graphic');
         break;
       default:
         break;
     }
   },
-  onSelectColor: function onSelectColor(info) {
-    console.log('Selected color', info.value);
+  handleSelectLayer: function handleSelectLayer(newLayer) {
+    this.selectedLayer = newLayer;
+    this.updatePanel(newLayer);
+    this.setLayerImg(newLayer);
+    this.updateCanvas(newLayer);
+  },
+  addCommonInputs: function addCommonInputs(panel, newPanelType) {
+    var layersImgContainer = document.createElement("div");
+    layersImgContainer.id = "layers-img";
+    panel.addElement('', layersImgContainer);
+    this.addLayers();
+
+    panel.addDropDown('Layer Select', ['Background', 'Background Graphic', 'Foreground', 'Foreground Graphic'], this.onSelectLayer.bind(this));
+
+    document.getElementsByClassName('qs_container')[0].id = 'layers-img-container';
+    document.getElementsByClassName('qs_container')[1].id = 'layers-select-dropdown';
+
+    this.addLayerSpecificInputs(panel);
+  },
+  addLayerSpecificInputs: function addLayerSpecificInputs(panel) {
+    switch (this.selectedLayer) {
+      case 'background':
+        _BackgroundLayer2.default.createLayer(panel, this.documentData);
+        break;
+      case 'bg-graphic':
+      case 'fg-graphic':
+        _GraphicLayer2.default.createLayer(panel);
+        break;
+      case 'foreground':
+        _ForegroundLayer2.default.createLayer(panel);
+        break;
+      default:
+        break;
+    }
+  },
+  updatePanel: function updatePanel(newPanelType) {
+
+    var panelInputs = document.getElementsByClassName('qs_container');
+
+    for (var i = panelInputs.length - 1; i > 0; i--) {
+      if (panelInputs[i].id !== 'layers-img-container' && panelInputs[i].id !== 'layers-select-dropdown') {
+        panelInputs[i].remove();
+      }
+    }
+    this.addLayerSpecificInputs(this.panel);
+
+    console.log('newPanelType', newPanelType);
   }
 };
 });
@@ -326,7 +447,7 @@ var App = {
     _MainPanel2.default.init(rootElem);
     _MainPanel2.default.documentData = this.documentData;
     _MainPanel2.default.selectedLayer = this.selectedLayer;
-    _MainPanel2.default.handleSelectLayer = this.handleSelectLayer.bind(this);
+    _MainPanel2.default.updateCanvas = this.handleSelectLayer.bind(this);
   },
   fitCanvasToWindow: function fitCanvasToWindow() {
     this.canvasElem.width = this.rootElem.clientWidth;

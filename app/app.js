@@ -46,7 +46,7 @@ var App = {
     MainPanel.init(rootElem);
     MainPanel.documentData = this.documentData;
     MainPanel.selectedLayer = this.selectedLayer;
-    MainPanel.handleSelectLayer = this.handleSelectLayer.bind(this);
+    MainPanel.updateCanvas = this.handleSelectLayer.bind(this);
   },
 
   fitCanvasToWindow() {

@@ -63,5 +63,5 @@ export default {
 		qsPanel.addElement(refName, div);
 		qsPanel.hideTitle(refName);
 		return refName;
-	}
+	},
 }
