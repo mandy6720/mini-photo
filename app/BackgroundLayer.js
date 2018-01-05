@@ -48,6 +48,9 @@ export default {
     panel.showControl(swatchGroupNames[0]);
     qsUtil.addSwatchHighlightByIndex(this.swatchPickers[swatchGroupNames[0]],0);
     this.selectedSwatchElem = this.swatchPickers[swatchGroupNames[0]].children[0];
+
+    panel.addFileChooser('Image', '', 'image/*', this.onChooseImage.bind(this));
+    // panel.hideTitle('Image');
   },
   formatWidthHeightInputs() {
     var inputsArr = document.getElementsByClassName('qs_container');
@@ -60,6 +63,15 @@ export default {
   },
   onSelectColor(info) {
     console.log('Selected color', info.value);
+  },
+  onChooseImage(fileObj) {
+    var fileURL = URL.createObjectURL(fileObj);
+    if (this.selectedLayer === 'background') {
+      this.documentData.backgroundImage.src = fileURL; 
+    } else {
+      console.log(this.selectedLayer)
+    }
+    this.handleChange();
   },
   onSelectSwatchGroup(info) {
 		// there's currently no way to edit dropdown contents at runtime

@@ -47,7 +47,7 @@ var App = {
     MainPanel.selectedLayer = this.selectedLayer;
     MainPanel.updateCanvas = this.handleSelectLayer.bind(this);
 
-    Background.handleChange = this.handleChangeColor.bind(this);
+    Background.handleChange = this.refreshCanvas.bind(this);
 
     this.refreshCanvas()
   },
@@ -68,10 +68,6 @@ var App = {
   handleSelectLayer(info) {
     console.log('[app.js] Layer selected', info);
     // destory panel in MainPanel and build new one according to layer selected
-  },
-  handleChangeColor() {
-    console.log('hi')
-    this.refreshCanvas();
   },
   fitBackgroundToCanvas() {
     var imgWidth = this.documentData.backgroundImage.width;
@@ -102,16 +98,13 @@ var App = {
       context.drawImage(this.documentData.backgroundImage, (canvas.width - backgroundImageSize.x) * 0.5, (canvas.height - backgroundImageSize.y) * 0.5, backgroundImageSize.x, backgroundImageSize.y);
     }
   },
-  onChooseImage(fileObj) {
-    var fileURL = URL.createObjectURL(fileObj);
-    this.documentData.backgroundImage.src = fileURL;
-  },
   refreshCanvas(canvas, context, resolution) {
     context = context || this.canvasContext;
     canvas = canvas || this.canvasElem;
     resolution = resolution || 1;
     var backgroundImageSize = this.documentData.backgroundImageSize;
     this.drawBackground(canvas, context, resolution);
+    // create functions for each layer and pile on top of eachother
   },
 }
 

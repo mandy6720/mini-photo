@@ -216,6 +216,9 @@ exports.default = {
     panel.showControl(swatchGroupNames[0]);
     _util2.default.addSwatchHighlightByIndex(this.swatchPickers[swatchGroupNames[0]], 0);
     this.selectedSwatchElem = this.swatchPickers[swatchGroupNames[0]].children[0];
+
+    panel.addFileChooser('Image', '', 'image/*', this.onChooseImage.bind(this));
+    // panel.hideTitle('Image');
   },
   formatWidthHeightInputs: function formatWidthHeightInputs() {
     var inputsArr = document.getElementsByClassName('qs_container');
@@ -228,6 +231,15 @@ exports.default = {
   },
   onSelectColor: function onSelectColor(info) {
     console.log('Selected color', info.value);
+  },
+  onChooseImage: function onChooseImage(fileObj) {
+    var fileURL = URL.createObjectURL(fileObj);
+    if (this.selectedLayer === 'background') {
+      this.documentData.backgroundImage.src = fileURL;
+    } else {
+      console.log(this.selectedLayer);
+    }
+    this.handleChange();
   },
   onSelectSwatchGroup: function onSelectSwatchGroup(info) {
     // there's currently no way to edit dropdown contents at runtime
@@ -524,7 +536,7 @@ var App = {
     _MainPanel2.default.selectedLayer = this.selectedLayer;
     _MainPanel2.default.updateCanvas = this.handleSelectLayer.bind(this);
 
-    _BackgroundLayer2.default.handleChange = this.handleChangeColor.bind(this);
+    _BackgroundLayer2.default.handleChange = this.refreshCanvas.bind(this);
 
     this.refreshCanvas();
   },
@@ -544,10 +556,6 @@ var App = {
   handleSelectLayer: function handleSelectLayer(info) {
     console.log('[app.js] Layer selected', info);
     // destory panel in MainPanel and build new one according to layer selected
-  },
-  handleChangeColor: function handleChangeColor() {
-    console.log('hi');
-    this.refreshCanvas();
   },
   fitBackgroundToCanvas: function fitBackgroundToCanvas() {
     var imgWidth = this.documentData.backgroundImage.width;
@@ -578,16 +586,13 @@ var App = {
       context.drawImage(this.documentData.backgroundImage, (canvas.width - backgroundImageSize.x) * 0.5, (canvas.height - backgroundImageSize.y) * 0.5, backgroundImageSize.x, backgroundImageSize.y);
     }
   },
-  onChooseImage: function onChooseImage(fileObj) {
-    var fileURL = URL.createObjectURL(fileObj);
-    this.documentData.backgroundImage.src = fileURL;
-  },
   refreshCanvas: function refreshCanvas(canvas, context, resolution) {
     context = context || this.canvasContext;
     canvas = canvas || this.canvasElem;
     resolution = resolution || 1;
     var backgroundImageSize = this.documentData.backgroundImageSize;
     this.drawBackground(canvas, context, resolution);
+    // create functions for each layer and pile on top of eachother
   }
 };
 
