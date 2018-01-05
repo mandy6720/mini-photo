@@ -13,10 +13,15 @@ var App = {
 
   // document data
 	documentData : {
-		workspaceSize : {x: 0, y: 0},
-		backgroundImageSize : {x: 0, y: 0},
-    backgroundImage : new Image(),
-    backgroundColor: '#000',
+    workspaceSize : {x: 0, y: 0},
+    background: {
+      backgroundImageSize : {x: 0, y: 0},
+      backgroundImage : new Image(),
+      backgroundColor: '#000',
+    },
+    backgroundGraphic: {},
+    foreground: {},
+    foregroundGraphic: {},
   },
 
   // other state
@@ -70,8 +75,8 @@ var App = {
     // destory panel in MainPanel and build new one according to layer selected
   },
   fitBackgroundToCanvas() {
-    var imgWidth = this.documentData.backgroundImage.width;
-    var imgHeight = this.documentData.backgroundImage.height;
+    var imgWidth = this.documentData.background.backgroundImage.width;
+    var imgHeight = this.documentData.background.backgroundImage.height;
     var canvasWidth = this.canvasElem.clientWidth;
     var canvasHeight = this.canvasElem.clientHeight;
     var finalWidth, finalHeight;
@@ -84,25 +89,25 @@ var App = {
       finalWidth = (canvasHeight/imgHeight) * imgWidth;
     }
 
-    this.documentData.backgroundImageSize.x = finalWidth;
-    this.documentData.backgroundImageSize.y = finalHeight;
+    this.documentData.background.backgroundImageSize.x = finalWidth;
+    this.documentData.background.backgroundImageSize.y = finalHeight;
   },
   drawBackground(canvas, context, resolution) {
-    var backgroundImageSize = Object.assign({},this.documentData.backgroundImageSize);
+    var backgroundImageSize = Object.assign({},this.documentData.background.backgroundImageSize);
     resolution = resolution || 1;
     backgroundImageSize.x *= resolution;
     backgroundImageSize.y *= resolution;
-    context.fillStyle = this.documentData.backgroundColor || "black";
+    context.fillStyle = this.documentData.background.backgroundColor || "black";
     context.fillRect(0, 0, canvas.width, canvas.height);
-    if (this.documentData.backgroundImage.src) {
-      context.drawImage(this.documentData.backgroundImage, (canvas.width - backgroundImageSize.x) * 0.5, (canvas.height - backgroundImageSize.y) * 0.5, backgroundImageSize.x, backgroundImageSize.y);
+    if (this.documentData.background.backgroundImage.src) {
+      context.drawImage(this.documentData.background.backgroundImage, (canvas.width - backgroundImageSize.x) * 0.5, (canvas.height - backgroundImageSize.y) * 0.5, backgroundImageSize.x, backgroundImageSize.y);
     }
   },
   refreshCanvas(canvas, context, resolution) {
     context = context || this.canvasContext;
     canvas = canvas || this.canvasElem;
     resolution = resolution || 1;
-    var backgroundImageSize = this.documentData.backgroundImageSize;
+    var backgroundImageSize = this.documentData.background.backgroundImageSize;
     this.drawBackground(canvas, context, resolution);
     // create functions for each layer and pile on top of eachother
   },

@@ -16,17 +16,10 @@ export default {
     this.panel = panel;
     this.documentData = documentData;
     this.selectedSwatchGroup = Palette.getSwatchGroupNames()[0];
-    console.log('this.selectedSwatchGroup', Palette.getSwatchGroupNames())
 
     panel.addNumber('Width', 0, documentData !== null ? documentData.workspaceSize.x : 5000);
     panel.addNumber('Height', 0, documentData !== null ? documentData.workspaceSize.x : 2000);
     this.formatWidthHeightInputs();
-
-    // panel.addDropDown(
-    //   'Background Color',
-    //   ['Light blue', 'Pink', 'Grey', 'Green'],
-    //   this.onSelectColor.bind(this)
-    // );
 
     var swatchGroupNames = Palette.getSwatchGroupNames();
     qsUtil.addCustomTitle(panel, "Choose Color Group", "Color Group_Title")
@@ -49,8 +42,10 @@ export default {
     qsUtil.addSwatchHighlightByIndex(this.swatchPickers[swatchGroupNames[0]],0);
     this.selectedSwatchElem = this.swatchPickers[swatchGroupNames[0]].children[0];
 
-    panel.addFileChooser('Image', '', 'image/*', this.onChooseImage.bind(this));
+    panel.addFileChooser('Background Image', '', 'image/*', this.onChooseImage.bind(this));
     // panel.hideTitle('Image');
+
+
   },
   formatWidthHeightInputs() {
     var inputsArr = document.getElementsByClassName('qs_container');
@@ -67,7 +62,7 @@ export default {
   onChooseImage(fileObj) {
     var fileURL = URL.createObjectURL(fileObj);
     if (this.selectedLayer === 'background') {
-      this.documentData.backgroundImage.src = fileURL; 
+      this.documentData.background.backgroundImage.src = fileURL; 
     } else {
       console.log(this.selectedLayer)
     }
@@ -97,7 +92,7 @@ export default {
 		}
 		qsUtil.addSwatchHighlight(elem);
     this.selectedSwatchElem = elem;
-    this.documentData.backgroundColor = swatch.color;
+    this.documentData.background.backgroundColor = swatch.color;
     this.handleChange();
     console.log(this.documentData, swatch)
   },

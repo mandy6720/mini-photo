@@ -187,17 +187,10 @@ exports.default = {
     this.panel = panel;
     this.documentData = documentData;
     this.selectedSwatchGroup = _palette2.default.getSwatchGroupNames()[0];
-    console.log('this.selectedSwatchGroup', _palette2.default.getSwatchGroupNames());
 
     panel.addNumber('Width', 0, documentData !== null ? documentData.workspaceSize.x : 5000);
     panel.addNumber('Height', 0, documentData !== null ? documentData.workspaceSize.x : 2000);
     this.formatWidthHeightInputs();
-
-    // panel.addDropDown(
-    //   'Background Color',
-    //   ['Light blue', 'Pink', 'Grey', 'Green'],
-    //   this.onSelectColor.bind(this)
-    // );
 
     var swatchGroupNames = _palette2.default.getSwatchGroupNames();
     _util2.default.addCustomTitle(panel, "Choose Color Group", "Color Group_Title");
@@ -217,8 +210,9 @@ exports.default = {
     _util2.default.addSwatchHighlightByIndex(this.swatchPickers[swatchGroupNames[0]], 0);
     this.selectedSwatchElem = this.swatchPickers[swatchGroupNames[0]].children[0];
 
-    panel.addFileChooser('Image', '', 'image/*', this.onChooseImage.bind(this));
+    panel.addFileChooser('Background Image', '', 'image/*', this.onChooseImage.bind(this));
     // panel.hideTitle('Image');
+
   },
   formatWidthHeightInputs: function formatWidthHeightInputs() {
     var inputsArr = document.getElementsByClassName('qs_container');
@@ -235,7 +229,7 @@ exports.default = {
   onChooseImage: function onChooseImage(fileObj) {
     var fileURL = URL.createObjectURL(fileObj);
     if (this.selectedLayer === 'background') {
-      this.documentData.backgroundImage.src = fileURL;
+      this.documentData.background.backgroundImage.src = fileURL;
     } else {
       console.log(this.selectedLayer);
     }
@@ -265,7 +259,7 @@ exports.default = {
     }
     _util2.default.addSwatchHighlight(elem);
     this.selectedSwatchElem = elem;
-    this.documentData.backgroundColor = swatch.color;
+    this.documentData.background.backgroundColor = swatch.color;
     this.handleChange();
     console.log(this.documentData, swatch);
   }
@@ -503,9 +497,14 @@ var App = {
   // document data
   documentData: {
     workspaceSize: { x: 0, y: 0 },
-    backgroundImageSize: { x: 0, y: 0 },
-    backgroundImage: new Image(),
-    backgroundColor: '#000'
+    background: {
+      backgroundImageSize: { x: 0, y: 0 },
+      backgroundImage: new Image(),
+      backgroundColor: '#000'
+    },
+    backgroundGraphic: {},
+    foreground: {},
+    foregroundGraphic: {}
   },
 
   // other state
@@ -558,8 +557,8 @@ var App = {
     // destory panel in MainPanel and build new one according to layer selected
   },
   fitBackgroundToCanvas: function fitBackgroundToCanvas() {
-    var imgWidth = this.documentData.backgroundImage.width;
-    var imgHeight = this.documentData.backgroundImage.height;
+    var imgWidth = this.documentData.background.backgroundImage.width;
+    var imgHeight = this.documentData.background.backgroundImage.height;
     var canvasWidth = this.canvasElem.clientWidth;
     var canvasHeight = this.canvasElem.clientHeight;
     var finalWidth, finalHeight;
@@ -572,25 +571,25 @@ var App = {
       finalWidth = canvasHeight / imgHeight * imgWidth;
     }
 
-    this.documentData.backgroundImageSize.x = finalWidth;
-    this.documentData.backgroundImageSize.y = finalHeight;
+    this.documentData.background.backgroundImageSize.x = finalWidth;
+    this.documentData.background.backgroundImageSize.y = finalHeight;
   },
   drawBackground: function drawBackground(canvas, context, resolution) {
-    var backgroundImageSize = Object.assign({}, this.documentData.backgroundImageSize);
+    var backgroundImageSize = Object.assign({}, this.documentData.background.backgroundImageSize);
     resolution = resolution || 1;
     backgroundImageSize.x *= resolution;
     backgroundImageSize.y *= resolution;
-    context.fillStyle = this.documentData.backgroundColor || "black";
+    context.fillStyle = this.documentData.background.backgroundColor || "black";
     context.fillRect(0, 0, canvas.width, canvas.height);
-    if (this.documentData.backgroundImage.src) {
-      context.drawImage(this.documentData.backgroundImage, (canvas.width - backgroundImageSize.x) * 0.5, (canvas.height - backgroundImageSize.y) * 0.5, backgroundImageSize.x, backgroundImageSize.y);
+    if (this.documentData.background.backgroundImage.src) {
+      context.drawImage(this.documentData.background.backgroundImage, (canvas.width - backgroundImageSize.x) * 0.5, (canvas.height - backgroundImageSize.y) * 0.5, backgroundImageSize.x, backgroundImageSize.y);
     }
   },
   refreshCanvas: function refreshCanvas(canvas, context, resolution) {
     context = context || this.canvasContext;
     canvas = canvas || this.canvasElem;
     resolution = resolution || 1;
-    var backgroundImageSize = this.documentData.backgroundImageSize;
+    var backgroundImageSize = this.documentData.background.backgroundImageSize;
     this.drawBackground(canvas, context, resolution);
     // create functions for each layer and pile on top of eachother
   }

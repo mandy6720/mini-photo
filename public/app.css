@@ -392,7 +392,7 @@ button {
   left: -999999px; }
 
 .qs_file_chooser_label {
-  background-image: url("media/image-upload-button.png");
+  background-image: url("img/image-upload-button.png");
   background-size: 100%;
   color: transparent;
   height: 81px;
