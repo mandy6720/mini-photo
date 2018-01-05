@@ -16,10 +16,11 @@ export default {
   updateCanvas: function() {console.log("changed layer")},
   handleChooseBackgroundImage : function(fileObject){console.log("selected background image", fileObject)},
 
-	init(rootElem) {
+	init(rootElem, documentData) {
     var panel = QuickSettings.create(5, 5, 'Layer', rootElem);
     this.panel = panel;
     this.rootElem = rootElem;
+    this.documentData = documentData;
     this.addCommonInputs(panel);
   },
   addLayers() {
@@ -81,7 +82,7 @@ export default {
 
     document.getElementsByClassName('qs_container')[0].id = 'layers-img-container';
     document.getElementsByClassName('qs_container')[1].id = 'layers-select-dropdown';
-
+    console.log(this.documentData)
     this.addLayerSpecificInputs(panel);
   },
   addLayerSpecificInputs(panel) {

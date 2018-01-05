@@ -163,15 +163,59 @@ var _quicksettings = require('quicksettings');
 
 var _quicksettings2 = _interopRequireDefault(_quicksettings);
 
+var _util = require('./util');
+
+var _util2 = _interopRequireDefault(_util);
+
+var _palette = require('./palette');
+
+var _palette2 = _interopRequireDefault(_palette);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = {
+  panel: null,
+  swatchPickers: {},
+  selectedSwatchGroup: null,
+  documentData: null,
+
+  handleChange: function handleChange() {
+    console.log("changed document");
+  },
+
   createLayer: function createLayer(panel, documentData) {
+    this.panel = panel;
+    this.documentData = documentData;
+    this.selectedSwatchGroup = _palette2.default.getSwatchGroupNames()[0];
+    console.log('this.selectedSwatchGroup', _palette2.default.getSwatchGroupNames());
+
     panel.addNumber('Width', 0, documentData !== null ? documentData.workspaceSize.x : 5000);
     panel.addNumber('Height', 0, documentData !== null ? documentData.workspaceSize.x : 2000);
     this.formatWidthHeightInputs();
 
-    panel.addDropDown('Background Color', ['Light blue', 'Pink', 'Grey', 'Green'], this.onSelectColor.bind(this));
+    // panel.addDropDown(
+    //   'Background Color',
+    //   ['Light blue', 'Pink', 'Grey', 'Green'],
+    //   this.onSelectColor.bind(this)
+    // );
+
+    var swatchGroupNames = _palette2.default.getSwatchGroupNames();
+    _util2.default.addCustomTitle(panel, "Choose Color Group", "Color Group_Title");
+    panel.addDropDown("Color Group", swatchGroupNames, this.onSelectSwatchGroup.bind(this));
+    panel.hideTitle("Color Group");
+
+    _lodash2.default.each(swatchGroupNames, function (swatchGroupName) {
+      var swatchPicker = _util2.default.createSwatchPicker(_palette2.default.getSwatchesFor(swatchGroupName), this.onSelectSwatch.bind(this));
+      this.swatchPickers[swatchGroupName] = swatchPicker;
+      panel.addElement(swatchGroupName, swatchPicker);
+
+      panel.hideTitle(swatchGroupName);
+      panel.hideControl(swatchGroupName);
+    }.bind(this));
+
+    panel.showControl(swatchGroupNames[0]);
+    _util2.default.addSwatchHighlightByIndex(this.swatchPickers[swatchGroupNames[0]], 0);
+    this.selectedSwatchElem = this.swatchPickers[swatchGroupNames[0]].children[0];
   },
   formatWidthHeightInputs: function formatWidthHeightInputs() {
     var inputsArr = document.getElementsByClassName('qs_container');
@@ -184,6 +228,34 @@ exports.default = {
   },
   onSelectColor: function onSelectColor(info) {
     console.log('Selected color', info.value);
+  },
+  onSelectSwatchGroup: function onSelectSwatchGroup(info) {
+    // there's currently no way to edit dropdown contents at runtime
+    // (without digging into private properties of the panel),
+    // so we're just hiding & showing specific controls
+    console.log(info, this.selectedSwatchGroup);
+    var selection = info.value;
+    this.panel.hideControl(this.selectedSwatchGroup);
+    this.panel.showControl(selection);
+
+    this.selectedSwatchGroup = selection;
+    if (this.selectedSwatchElem) {
+      _util2.default.removeSwatchHighlight(this.selectedSwatchElem);
+    }
+    _util2.default.addSwatchHighlightByIndex(this.swatchPickers[selection], 0);
+    this.selectedSwatchElem = this.swatchPickers[selection].children[0];
+
+    this.handleChange();
+  },
+  onSelectSwatch: function onSelectSwatch(swatch, elem) {
+    if (this.selectedSwatchElem) {
+      _util2.default.removeSwatchHighlight(this.selectedSwatchElem);
+    }
+    _util2.default.addSwatchHighlight(elem);
+    this.selectedSwatchElem = elem;
+    this.documentData.backgroundColor = swatch.color;
+    this.handleChange();
+    console.log(this.documentData, swatch);
   }
 };
 });
@@ -287,10 +359,11 @@ exports.default = {
     console.log("selected background image", fileObject);
   },
 
-  init: function init(rootElem) {
+  init: function init(rootElem, documentData) {
     var panel = _quicksettings2.default.create(5, 5, 'Layer', rootElem);
     this.panel = panel;
     this.rootElem = rootElem;
+    this.documentData = documentData;
     this.addCommonInputs(panel);
   },
   addLayers: function addLayers() {
@@ -348,7 +421,7 @@ exports.default = {
 
     document.getElementsByClassName('qs_container')[0].id = 'layers-img-container';
     document.getElementsByClassName('qs_container')[1].id = 'layers-select-dropdown';
-
+    console.log(this.documentData);
     this.addLayerSpecificInputs(panel);
   },
   addLayerSpecificInputs: function addLayerSpecificInputs(panel) {
@@ -402,6 +475,10 @@ var _MainPanel = require('./MainPanel');
 
 var _MainPanel2 = _interopRequireDefault(_MainPanel);
 
+var _BackgroundLayer = require('./BackgroundLayer');
+
+var _BackgroundLayer2 = _interopRequireDefault(_BackgroundLayer);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var App = {
@@ -416,9 +493,7 @@ var App = {
     workspaceSize: { x: 0, y: 0 },
     backgroundImageSize: { x: 0, y: 0 },
     backgroundImage: new Image(),
-    grids: [],
-    magnets: [],
-    masks: []
+    backgroundColor: '#000'
   },
 
   // other state
@@ -444,10 +519,14 @@ var App = {
     this.fitCanvasToWindow();
 
     // inset panel here
-    _MainPanel2.default.init(rootElem);
+    _MainPanel2.default.init(rootElem, this.documentData);
     _MainPanel2.default.documentData = this.documentData;
     _MainPanel2.default.selectedLayer = this.selectedLayer;
     _MainPanel2.default.updateCanvas = this.handleSelectLayer.bind(this);
+
+    _BackgroundLayer2.default.handleChange = this.handleChangeColor.bind(this);
+
+    this.refreshCanvas();
   },
   fitCanvasToWindow: function fitCanvasToWindow() {
     this.canvasElem.width = this.rootElem.clientWidth;
@@ -465,6 +544,50 @@ var App = {
   handleSelectLayer: function handleSelectLayer(info) {
     console.log('[app.js] Layer selected', info);
     // destory panel in MainPanel and build new one according to layer selected
+  },
+  handleChangeColor: function handleChangeColor() {
+    console.log('hi');
+    this.refreshCanvas();
+  },
+  fitBackgroundToCanvas: function fitBackgroundToCanvas() {
+    var imgWidth = this.documentData.backgroundImage.width;
+    var imgHeight = this.documentData.backgroundImage.height;
+    var canvasWidth = this.canvasElem.clientWidth;
+    var canvasHeight = this.canvasElem.clientHeight;
+    var finalWidth, finalHeight;
+
+    finalWidth = canvasWidth;
+    finalHeight = canvasWidth / imgWidth * imgHeight;
+
+    if (finalHeight > canvasHeight) {
+      finalHeight = canvasHeight;
+      finalWidth = canvasHeight / imgHeight * imgWidth;
+    }
+
+    this.documentData.backgroundImageSize.x = finalWidth;
+    this.documentData.backgroundImageSize.y = finalHeight;
+  },
+  drawBackground: function drawBackground(canvas, context, resolution) {
+    var backgroundImageSize = Object.assign({}, this.documentData.backgroundImageSize);
+    resolution = resolution || 1;
+    backgroundImageSize.x *= resolution;
+    backgroundImageSize.y *= resolution;
+    context.fillStyle = this.documentData.backgroundColor || "black";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    if (this.documentData.backgroundImage.src) {
+      context.drawImage(this.documentData.backgroundImage, (canvas.width - backgroundImageSize.x) * 0.5, (canvas.height - backgroundImageSize.y) * 0.5, backgroundImageSize.x, backgroundImageSize.y);
+    }
+  },
+  onChooseImage: function onChooseImage(fileObj) {
+    var fileURL = URL.createObjectURL(fileObj);
+    this.documentData.backgroundImage.src = fileURL;
+  },
+  refreshCanvas: function refreshCanvas(canvas, context, resolution) {
+    context = context || this.canvasContext;
+    canvas = canvas || this.canvasElem;
+    resolution = resolution || 1;
+    var backgroundImageSize = this.documentData.backgroundImageSize;
+    this.drawBackground(canvas, context, resolution);
   }
 };
 
@@ -490,6 +613,64 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+});
+
+require.register("palette.js", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _watsonColors = require('./watson-colors');
+
+var _watsonColors2 = _interopRequireDefault(_watsonColors);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// ick. this is kinda messy internally.
+// should probably have a load step that processes the swatch data
+// rather than constantly having to order things by name on the fly
+
+exports.default = {
+	_swatchCollection: _watsonColors2.default,
+
+	getDefaultSwatchGroup: function getDefaultSwatchGroup() {
+		return this.getSwatchGroupByName(this.getSwatchGroupNames()[0]);
+	},
+	getDefaultColor: function getDefaultColor() {
+		var defaultGroupName = this.getDefaultSwatchGroup().name;
+		// return this.getSwatchValue(defaultGroupName, this.getSwatchNamesFor(defaultGroupName)[0]);
+		return this.getSwatchesFor(defaultGroupName)[0].color;
+	},
+	getSwatchGroupByName: function getSwatchGroupByName(groupName) {
+		return _lodash2.default.find(this._swatchCollection, function (swatchGroup) {
+			return swatchGroup.name == groupName;
+		});
+	},
+	getSwatchGroupNames: function getSwatchGroupNames() {
+		return _lodash2.default.map(this._swatchCollection, function (swatchGroup) {
+			return swatchGroup.name;
+		}).sort();
+	},
+	getSwatchNamesFor: function getSwatchNamesFor(swatchGroupName) {
+		return _lodash2.default.map(this.getSwatchesFor(swatchGroupName), function (swatch) {
+			return swatch.name;
+		}).sort();
+	},
+	getSwatchesFor: function getSwatchesFor(swatchGroupName) {
+		return this.getSwatchGroupByName(swatchGroupName).swatches;
+	},
+	getSwatchValue: function getSwatchValue(swatchGroupName, swatchName) {
+		return _lodash2.default.find(this.getSwatchesFor(swatchGroupName), function (swatch) {
+			return swatch.name == swatchName;
+		}).color;
+	}
+};
 });
 
 require.register("util.js", function(exports, require, module) {
