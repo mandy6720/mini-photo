@@ -104,7 +104,6 @@ var App = {
     context.fillStyle = this.documentData.background.backgroundColor || "black";
     context.fillRect(0, 0, canvas.width, canvas.height);
     if (typeof(this.documentData.background.backgroundImage).classList.contains('img-source')) {
-      console.log('hi')
       context.drawImage(this.documentData.background.backgroundImage, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
     } else if (this.documentData.background.backgroundImage.name !== '') {
       var reader = new FileReader();

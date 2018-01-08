@@ -222,9 +222,10 @@ exports.default = {
 
     var lightbox = basicLightbox.create('\n      <div class="modal">\n        <div class="lightbox-container clearfix">\n          <div class="background image-thumb" id="bg1"></div>\n          <div class="background image-thumb" id="bg2"></div>\n          <div class="img-sources">\n            <img src="img/background_1.jpg" id="bg1-source" class="img-source" />\n            <img src="img/background_2.jpg" id="bg2-source" class="img-source" />\n          </div>\n        </div>\n        <a class="close-button">x</a>\n        <button class="qs_button secondary">Select Image</button>\n      </div>', {
       beforeShow: function beforeShow(instance) {
-        // set images (otherwise, backgroundImage isn't "gettable" with JS)
-        // instance.element().querySelector('#bg1').style.backgroundImage = "url('img/background_1.jpg')";
-        // instance.element().querySelector('#bg2').style.backgroundImage = "url('img/background_2.jpg')";
+        console.log(_this.documentData.background);
+        if (_this.documentData.background.backgroundImage.classList && _this.documentData.background.backgroundImage.classList.contains('img-source')) {
+          instance.element().querySelector('#' + _this.documentData.background.backgroundImage.id).classList.add('selected');
+        }
 
         instance.element().querySelector('a').onclick = instance.close;
         instance.element().querySelector('button').onclick = function () {
@@ -232,11 +233,10 @@ exports.default = {
           // see this.onChooseImage
           var selected = instance.element().querySelectorAll('.selected');
           if (selected.length > 0) {
-            console.log(selected[0].id);
             var sourceImg = '#' + selected[0].id + '-source';
             var selectedBgImage = instance.element().querySelector(sourceImg);
             _this.documentData.background.backgroundImage = selectedBgImage;
-            console.log(selectedBgImage);
+            instance.close();
             _this.handleChange();
           }
         };
@@ -632,7 +632,6 @@ var App = {
     context.fillStyle = this.documentData.background.backgroundColor || "black";
     context.fillRect(0, 0, canvas.width, canvas.height);
     if (_typeof(this.documentData.background.backgroundImage.classList.contains('img-source'))) {
-      console.log('hi');
       context.drawImage(this.documentData.background.backgroundImage, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
     } else if (this.documentData.background.backgroundImage.name !== '') {
       var reader = new FileReader();

@@ -59,9 +59,11 @@ export default {
         <button class="qs_button secondary">Select Image</button>
       </div>`, {
         beforeShow: (instance) => {
-          // set images (otherwise, backgroundImage isn't "gettable" with JS)
-          // instance.element().querySelector('#bg1').style.backgroundImage = "url('img/background_1.jpg')";
-          // instance.element().querySelector('#bg2').style.backgroundImage = "url('img/background_2.jpg')";
+          console.log(this.documentData.background);
+          if (this.documentData.background.backgroundImage.classList && 
+            this.documentData.background.backgroundImage.classList.contains('img-source')) {
+            instance.element().querySelector(`#${this.documentData.background.backgroundImage.id}`).classList.add('selected');
+          }
 
           instance.element().querySelector('a').onclick = instance.close;
           instance.element().querySelector('button').onclick = () => {
@@ -69,11 +71,10 @@ export default {
             // see this.onChooseImage
             var selected = instance.element().querySelectorAll('.selected');
             if (selected.length > 0) {
-              console.log(selected[0].id);
               var sourceImg = `#${selected[0].id}-source`;
               var selectedBgImage = instance.element().querySelector(sourceImg);
               this.documentData.background.backgroundImage = selectedBgImage;
-              console.log(selectedBgImage);
+              instance.close();
               this.handleChange();
             }
           }
