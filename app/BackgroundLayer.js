@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import QuickSettings from 'quicksettings';
+import * as basicLightbox from 'basiclightbox';
 
 import qsUtil from './util';
 import Palette from './palette';
@@ -16,17 +17,10 @@ export default {
     this.panel = panel;
     this.documentData = documentData;
     this.selectedSwatchGroup = Palette.getSwatchGroupNames()[0];
-    console.log('this.selectedSwatchGroup', Palette.getSwatchGroupNames())
 
-    panel.addNumber('Width', 0, documentData !== null ? documentData.workspaceSize.x : 5000);
-    panel.addNumber('Height', 0, documentData !== null ? documentData.workspaceSize.x : 2000);
+    panel.addNumber('Width', 0, documentData !== null ? documentData.workspaceSize.x : 5000, documentData.workspaceSize.x );
+    panel.addNumber('Height', 0, documentData !== null ? documentData.workspaceSize.x : 2000, documentData.workspaceSize.y);
     this.formatWidthHeightInputs();
-
-    // panel.addDropDown(
-    //   'Background Color',
-    //   ['Light blue', 'Pink', 'Grey', 'Green'],
-    //   this.onSelectColor.bind(this)
-    // );
 
     var swatchGroupNames = Palette.getSwatchGroupNames();
     qsUtil.addCustomTitle(panel, "Choose Color Group", "Color Group_Title")
@@ -48,6 +42,66 @@ export default {
     panel.showControl(swatchGroupNames[0]);
     qsUtil.addSwatchHighlightByIndex(this.swatchPickers[swatchGroupNames[0]],0);
     this.selectedSwatchElem = this.swatchPickers[swatchGroupNames[0]].children[0];
+
+    panel.addFileChooser('Background Image', '', 'image/*', this.onChooseImage.bind(this));
+    
+    var lightbox = basicLightbox.create(`
+      <div class="modal">
+        <div class="lightbox-container clearfix">
+          <div class="background image-thumb" id="bg1"></div>
+          <div class="background image-thumb" id="bg2"></div>
+          <div class="img-sources">
+            <img src="img/background_1.jpg" id="bg1-source" class="img-source" />
+            <img src="img/background_2.jpg" id="bg2-source" class="img-source" />
+          </div>
+        </div>
+        <a class="close-button">x</a>
+        <button class="qs_button secondary">Select Image</button>
+      </div>`, {
+        beforeShow: (instance) => {
+          console.log(this.documentData.background);
+          if (this.documentData.background.backgroundImage.classList && 
+            this.documentData.background.backgroundImage.classList.contains('img-source')) {
+            instance.element().querySelector(`#${this.documentData.background.backgroundImage.id}`).classList.add('selected');
+          }
+
+          instance.element().querySelector('a').onclick = instance.close;
+          instance.element().querySelector('button').onclick = () => {
+            // set selected if image is selected
+            // see this.onChooseImage
+            var selected = instance.element().querySelectorAll('.selected');
+            if (selected.length > 0) {
+              var sourceImg = `#${selected[0].id}-source`;
+              var selectedBgImage = instance.element().querySelector(sourceImg);
+              this.documentData.background.backgroundImage = selectedBgImage;
+              instance.close();
+              this.handleChange();
+            }
+          }
+          var thumbs = instance.element().querySelectorAll('.image-thumb');
+          _.forEach(thumbs, (thumb) => {
+            thumb.onclick = (e) => {
+              // remove from others
+              // if not already selected, add to clicked
+              if (!e.target.classList.contains('selected')) {
+                var currentSelection = instance.element().querySelectorAll('.selected');
+                if (currentSelection.length > 0) {
+                  currentSelection[0].classList.remove('selected');
+                }
+                e.target.classList.add('selected');
+              } else {
+                e.target.classList.remove('selected');
+              }
+            }
+          });
+          
+        }
+      });
+    
+    var lightboxButton = qsUtil.createButton("Open", "secondary", lightbox.show.bind(this));
+    panel.addElement('lightbox', lightboxButton)
+
+
   },
   formatWidthHeightInputs() {
     var inputsArr = document.getElementsByClassName('qs_container');
@@ -60,6 +114,13 @@ export default {
   },
   onSelectColor(info) {
     console.log('Selected color', info.value);
+  },
+  onChooseImage(fileObj) {
+    // var fileURL = URL.createObjectURL(fileObj);
+    // this.documentData.background.backgroundImage.src = fileURL; 
+    console.log(this.documentData.background, fileObj);
+    this.documentData.background.backgroundImage = fileObj;
+    this.handleChange();
   },
   onSelectSwatchGroup(info) {
 		// there's currently no way to edit dropdown contents at runtime
@@ -85,7 +146,7 @@ export default {
 		}
 		qsUtil.addSwatchHighlight(elem);
     this.selectedSwatchElem = elem;
-    this.documentData.backgroundColor = swatch.color;
+    this.documentData.background.backgroundColor = swatch.color;
     this.handleChange();
     console.log(this.documentData, swatch)
   },

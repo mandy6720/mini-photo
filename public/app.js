@@ -163,6 +163,10 @@ var _quicksettings = require('quicksettings');
 
 var _quicksettings2 = _interopRequireDefault(_quicksettings);
 
+var _basiclightbox = require('basiclightbox');
+
+var basicLightbox = _interopRequireWildcard(_basiclightbox);
+
 var _util = require('./util');
 
 var _util2 = _interopRequireDefault(_util);
@@ -170,6 +174,8 @@ var _util2 = _interopRequireDefault(_util);
 var _palette = require('./palette');
 
 var _palette2 = _interopRequireDefault(_palette);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -184,20 +190,15 @@ exports.default = {
   },
 
   createLayer: function createLayer(panel, documentData) {
+    var _this = this;
+
     this.panel = panel;
     this.documentData = documentData;
     this.selectedSwatchGroup = _palette2.default.getSwatchGroupNames()[0];
-    console.log('this.selectedSwatchGroup', _palette2.default.getSwatchGroupNames());
 
-    panel.addNumber('Width', 0, documentData !== null ? documentData.workspaceSize.x : 5000);
-    panel.addNumber('Height', 0, documentData !== null ? documentData.workspaceSize.x : 2000);
+    panel.addNumber('Width', 0, documentData !== null ? documentData.workspaceSize.x : 5000, documentData.workspaceSize.x);
+    panel.addNumber('Height', 0, documentData !== null ? documentData.workspaceSize.x : 2000, documentData.workspaceSize.y);
     this.formatWidthHeightInputs();
-
-    // panel.addDropDown(
-    //   'Background Color',
-    //   ['Light blue', 'Pink', 'Grey', 'Green'],
-    //   this.onSelectColor.bind(this)
-    // );
 
     var swatchGroupNames = _palette2.default.getSwatchGroupNames();
     _util2.default.addCustomTitle(panel, "Choose Color Group", "Color Group_Title");
@@ -216,6 +217,50 @@ exports.default = {
     panel.showControl(swatchGroupNames[0]);
     _util2.default.addSwatchHighlightByIndex(this.swatchPickers[swatchGroupNames[0]], 0);
     this.selectedSwatchElem = this.swatchPickers[swatchGroupNames[0]].children[0];
+
+    panel.addFileChooser('Background Image', '', 'image/*', this.onChooseImage.bind(this));
+
+    var lightbox = basicLightbox.create('\n      <div class="modal">\n        <div class="lightbox-container clearfix">\n          <div class="background image-thumb" id="bg1"></div>\n          <div class="background image-thumb" id="bg2"></div>\n          <div class="img-sources">\n            <img src="img/background_1.jpg" id="bg1-source" class="img-source" />\n            <img src="img/background_2.jpg" id="bg2-source" class="img-source" />\n          </div>\n        </div>\n        <a class="close-button">x</a>\n        <button class="qs_button secondary">Select Image</button>\n      </div>', {
+      beforeShow: function beforeShow(instance) {
+        console.log(_this.documentData.background);
+        if (_this.documentData.background.backgroundImage.classList && _this.documentData.background.backgroundImage.classList.contains('img-source')) {
+          instance.element().querySelector('#' + _this.documentData.background.backgroundImage.id).classList.add('selected');
+        }
+
+        instance.element().querySelector('a').onclick = instance.close;
+        instance.element().querySelector('button').onclick = function () {
+          // set selected if image is selected
+          // see this.onChooseImage
+          var selected = instance.element().querySelectorAll('.selected');
+          if (selected.length > 0) {
+            var sourceImg = '#' + selected[0].id + '-source';
+            var selectedBgImage = instance.element().querySelector(sourceImg);
+            _this.documentData.background.backgroundImage = selectedBgImage;
+            instance.close();
+            _this.handleChange();
+          }
+        };
+        var thumbs = instance.element().querySelectorAll('.image-thumb');
+        _lodash2.default.forEach(thumbs, function (thumb) {
+          thumb.onclick = function (e) {
+            // remove from others
+            // if not already selected, add to clicked
+            if (!e.target.classList.contains('selected')) {
+              var currentSelection = instance.element().querySelectorAll('.selected');
+              if (currentSelection.length > 0) {
+                currentSelection[0].classList.remove('selected');
+              }
+              e.target.classList.add('selected');
+            } else {
+              e.target.classList.remove('selected');
+            }
+          };
+        });
+      }
+    });
+
+    var lightboxButton = _util2.default.createButton("Open", "secondary", lightbox.show.bind(this));
+    panel.addElement('lightbox', lightboxButton);
   },
   formatWidthHeightInputs: function formatWidthHeightInputs() {
     var inputsArr = document.getElementsByClassName('qs_container');
@@ -228,6 +273,13 @@ exports.default = {
   },
   onSelectColor: function onSelectColor(info) {
     console.log('Selected color', info.value);
+  },
+  onChooseImage: function onChooseImage(fileObj) {
+    // var fileURL = URL.createObjectURL(fileObj);
+    // this.documentData.background.backgroundImage.src = fileURL; 
+    console.log(this.documentData.background, fileObj);
+    this.documentData.background.backgroundImage = fileObj;
+    this.handleChange();
   },
   onSelectSwatchGroup: function onSelectSwatchGroup(info) {
     // there's currently no way to edit dropdown contents at runtime
@@ -253,7 +305,7 @@ exports.default = {
     }
     _util2.default.addSwatchHighlight(elem);
     this.selectedSwatchElem = elem;
-    this.documentData.backgroundColor = swatch.color;
+    this.documentData.background.backgroundColor = swatch.color;
     this.handleChange();
     console.log(this.documentData, swatch);
   }
@@ -463,6 +515,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _quicksettings = require('quicksettings');
 
 var _quicksettings2 = _interopRequireDefault(_quicksettings);
@@ -491,9 +545,14 @@ var App = {
   // document data
   documentData: {
     workspaceSize: { x: 0, y: 0 },
-    backgroundImageSize: { x: 0, y: 0 },
-    backgroundImage: new Image(),
-    backgroundColor: '#000'
+    background: {
+      backgroundImageSize: { x: 0, y: 0 },
+      backgroundImage: new Image(),
+      backgroundColor: '#000'
+    },
+    backgroundGraphic: {},
+    foreground: {},
+    foregroundGraphic: {}
   },
 
   // other state
@@ -524,7 +583,7 @@ var App = {
     _MainPanel2.default.selectedLayer = this.selectedLayer;
     _MainPanel2.default.updateCanvas = this.handleSelectLayer.bind(this);
 
-    _BackgroundLayer2.default.handleChange = this.handleChangeColor.bind(this);
+    _BackgroundLayer2.default.handleChange = this.refreshCanvas.bind(this);
 
     this.refreshCanvas();
   },
@@ -540,54 +599,60 @@ var App = {
 
     this.svgElem.setAttribute('width', this.canvasElem.width);
     this.svgElem.setAttribute('height', this.canvasElem.height);
+
+    this.fitBackgroundToCanvas();
   },
   handleSelectLayer: function handleSelectLayer(info) {
-    console.log('[app.js] Layer selected', info);
-    // destory panel in MainPanel and build new one according to layer selected
-  },
-  handleChangeColor: function handleChangeColor() {
-    console.log('hi');
-    this.refreshCanvas();
+    console.log('[app.js] Changed layer to', info);
+    this.selectedLayer = info;
   },
   fitBackgroundToCanvas: function fitBackgroundToCanvas() {
-    var imgWidth = this.documentData.backgroundImage.width;
-    var imgHeight = this.documentData.backgroundImage.height;
+    var imgWidth = this.documentData.background.backgroundImage.width;
+    var imgHeight = this.documentData.background.backgroundImage.height;
     var canvasWidth = this.canvasElem.clientWidth;
     var canvasHeight = this.canvasElem.clientHeight;
     var finalWidth, finalHeight;
-
     finalWidth = canvasWidth;
-    finalHeight = canvasWidth / imgWidth * imgHeight;
+    finalHeight = imgWidth !== 0 && imgHeight !== 0 ? canvasWidth / imgWidth * imgHeight : canvasHeight;
 
     if (finalHeight > canvasHeight) {
       finalHeight = canvasHeight;
       finalWidth = canvasHeight / imgHeight * imgWidth;
     }
 
-    this.documentData.backgroundImageSize.x = finalWidth;
-    this.documentData.backgroundImageSize.y = finalHeight;
+    this.documentData.background.backgroundImageSize.x = finalWidth;
+    this.documentData.background.backgroundImageSize.y = finalHeight;
   },
   drawBackground: function drawBackground(canvas, context, resolution) {
-    var backgroundImageSize = Object.assign({}, this.documentData.backgroundImageSize);
+    var backgroundImageSize = Object.assign({}, this.documentData.background.backgroundImageSize);
+    console.log('draw bg', this.documentData.background, backgroundImageSize, resolution);
     resolution = resolution || 1;
     backgroundImageSize.x *= resolution;
     backgroundImageSize.y *= resolution;
-    context.fillStyle = this.documentData.backgroundColor || "black";
+    context.fillStyle = this.documentData.background.backgroundColor || "black";
     context.fillRect(0, 0, canvas.width, canvas.height);
-    if (this.documentData.backgroundImage.src) {
-      context.drawImage(this.documentData.backgroundImage, (canvas.width - backgroundImageSize.x) * 0.5, (canvas.height - backgroundImageSize.y) * 0.5, backgroundImageSize.x, backgroundImageSize.y);
+    if (_typeof(this.documentData.background.backgroundImage.classList.contains('img-source'))) {
+      context.drawImage(this.documentData.background.backgroundImage, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
+    } else if (this.documentData.background.backgroundImage.name !== '') {
+      var reader = new FileReader();
+      reader.onload = function (event) {
+        var img = new Image();
+        img.onload = function () {
+          context.drawImage(img, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(this.documentData.background.backgroundImage);
+      context.drawImage(this.documentData.background.backgroundImage, backgroundImageSize.x, backgroundImageSize.y, backgroundImageSize.x, backgroundImageSize.y);
     }
-  },
-  onChooseImage: function onChooseImage(fileObj) {
-    var fileURL = URL.createObjectURL(fileObj);
-    this.documentData.backgroundImage.src = fileURL;
   },
   refreshCanvas: function refreshCanvas(canvas, context, resolution) {
     context = context || this.canvasContext;
     canvas = canvas || this.canvasElem;
     resolution = resolution || 1;
-    var backgroundImageSize = this.documentData.backgroundImageSize;
+    var backgroundImageSize = this.documentData.background.backgroundImageSize;
     this.drawBackground(canvas, context, resolution);
+    // create functions for each layer and pile on top of eachother
   }
 };
 
