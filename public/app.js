@@ -188,8 +188,8 @@ exports.default = {
     this.documentData = documentData;
     this.selectedSwatchGroup = _palette2.default.getSwatchGroupNames()[0];
 
-    panel.addNumber('Width', 0, documentData !== null ? documentData.workspaceSize.x : 5000);
-    panel.addNumber('Height', 0, documentData !== null ? documentData.workspaceSize.x : 2000);
+    panel.addNumber('Width', 0, documentData !== null ? documentData.workspaceSize.x : 5000, documentData.workspaceSize.x);
+    panel.addNumber('Height', 0, documentData !== null ? documentData.workspaceSize.x : 2000, documentData.workspaceSize.y);
     this.formatWidthHeightInputs();
 
     var swatchGroupNames = _palette2.default.getSwatchGroupNames();
@@ -227,12 +227,10 @@ exports.default = {
     console.log('Selected color', info.value);
   },
   onChooseImage: function onChooseImage(fileObj) {
-    var fileURL = URL.createObjectURL(fileObj);
-    if (this.selectedLayer === 'background') {
-      this.documentData.background.backgroundImage.src = fileURL;
-    } else {
-      console.log(this.selectedLayer);
-    }
+    // var fileURL = URL.createObjectURL(fileObj);
+    // this.documentData.background.backgroundImage.src = fileURL; 
+    console.log(this.documentData.background, fileObj);
+    this.documentData.background.backgroundImage = fileObj;
     this.handleChange();
   },
   onSelectSwatchGroup: function onSelectSwatchGroup(info) {
@@ -551,10 +549,12 @@ var App = {
 
     this.svgElem.setAttribute('width', this.canvasElem.width);
     this.svgElem.setAttribute('height', this.canvasElem.height);
+
+    this.fitBackgroundToCanvas();
   },
   handleSelectLayer: function handleSelectLayer(info) {
-    console.log('[app.js] Layer selected', info);
-    // destory panel in MainPanel and build new one according to layer selected
+    console.log('[app.js] Changed layer to', info);
+    this.selectedLayer = info;
   },
   fitBackgroundToCanvas: function fitBackgroundToCanvas() {
     var imgWidth = this.documentData.background.backgroundImage.width;
@@ -562,27 +562,38 @@ var App = {
     var canvasWidth = this.canvasElem.clientWidth;
     var canvasHeight = this.canvasElem.clientHeight;
     var finalWidth, finalHeight;
-
     finalWidth = canvasWidth;
-    finalHeight = canvasWidth / imgWidth * imgHeight;
+    finalHeight = imgWidth !== 0 && imgHeight !== 0 ? canvasWidth / imgWidth * imgHeight : canvasHeight;
 
     if (finalHeight > canvasHeight) {
       finalHeight = canvasHeight;
       finalWidth = canvasHeight / imgHeight * imgWidth;
     }
+    console.log(finalWidth, finalHeight);
 
     this.documentData.background.backgroundImageSize.x = finalWidth;
     this.documentData.background.backgroundImageSize.y = finalHeight;
   },
   drawBackground: function drawBackground(canvas, context, resolution) {
     var backgroundImageSize = Object.assign({}, this.documentData.background.backgroundImageSize);
+    console.log('dra bg', this.documentData.background.backgroundImageSize, backgroundImageSize, resolution);
     resolution = resolution || 1;
     backgroundImageSize.x *= resolution;
     backgroundImageSize.y *= resolution;
     context.fillStyle = this.documentData.background.backgroundColor || "black";
     context.fillRect(0, 0, canvas.width, canvas.height);
-    if (this.documentData.background.backgroundImage.src) {
-      context.drawImage(this.documentData.background.backgroundImage, (canvas.width - backgroundImageSize.x) * 0.5, (canvas.height - backgroundImageSize.y) * 0.5, backgroundImageSize.x, backgroundImageSize.y);
+    if (this.documentData.background.backgroundImage.name !== '') {
+      var reader = new FileReader();
+      reader.onload = function (event) {
+        var img = new Image();
+        img.onload = function () {
+          context.drawImage(img, 0, 0);
+        };
+        img.src = event.target.result;
+        console.log(event.target);
+      };
+      reader.readAsDataURL(this.documentData.background.backgroundImage);
+      context.drawImage(this.documentData.background.backgroundImage, backgroundImageSize.x, backgroundImageSize.y, backgroundImageSize.x, backgroundImageSize.y);
     }
   },
   refreshCanvas: function refreshCanvas(canvas, context, resolution) {

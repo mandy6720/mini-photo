@@ -17,8 +17,8 @@ export default {
     this.documentData = documentData;
     this.selectedSwatchGroup = Palette.getSwatchGroupNames()[0];
 
-    panel.addNumber('Width', 0, documentData !== null ? documentData.workspaceSize.x : 5000);
-    panel.addNumber('Height', 0, documentData !== null ? documentData.workspaceSize.x : 2000);
+    panel.addNumber('Width', 0, documentData !== null ? documentData.workspaceSize.x : 5000, documentData.workspaceSize.x );
+    panel.addNumber('Height', 0, documentData !== null ? documentData.workspaceSize.x : 2000, documentData.workspaceSize.y);
     this.formatWidthHeightInputs();
 
     var swatchGroupNames = Palette.getSwatchGroupNames();
@@ -60,12 +60,10 @@ export default {
     console.log('Selected color', info.value);
   },
   onChooseImage(fileObj) {
-    var fileURL = URL.createObjectURL(fileObj);
-    if (this.selectedLayer === 'background') {
-      this.documentData.background.backgroundImage.src = fileURL; 
-    } else {
-      console.log(this.selectedLayer)
-    }
+    // var fileURL = URL.createObjectURL(fileObj);
+    // this.documentData.background.backgroundImage.src = fileURL; 
+    console.log(this.documentData.background, fileObj);
+    this.documentData.background.backgroundImage = fileObj;
     this.handleChange();
   },
   onSelectSwatchGroup(info) {
