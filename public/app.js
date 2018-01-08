@@ -163,6 +163,10 @@ var _quicksettings = require('quicksettings');
 
 var _quicksettings2 = _interopRequireDefault(_quicksettings);
 
+var _basiclightbox = require('basiclightbox');
+
+var basicLightbox = _interopRequireWildcard(_basiclightbox);
+
 var _util = require('./util');
 
 var _util2 = _interopRequireDefault(_util);
@@ -170,6 +174,8 @@ var _util2 = _interopRequireDefault(_util);
 var _palette = require('./palette');
 
 var _palette2 = _interopRequireDefault(_palette);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -211,8 +217,15 @@ exports.default = {
     this.selectedSwatchElem = this.swatchPickers[swatchGroupNames[0]].children[0];
 
     panel.addFileChooser('Background Image', '', 'image/*', this.onChooseImage.bind(this));
-    // panel.hideTitle('Image');
 
+    var lightbox = basicLightbox.create('\n      <div class="modal">\n        <div class="lightbox-container clearfix">\n          <div class="background image-thumb" id="bg1"></div>\n          <div class="background image-thumb" id="bg2"></div>\n        </div>\n        <a class="close-button">x</a>\n      </div>', {
+      beforeShow: function beforeShow(instance) {
+        instance.element().querySelector('a').onclick = instance.close;
+      }
+    });
+
+    var lightboxButton = _util2.default.createButton("Open", "secondary", lightbox.show.bind(this));
+    panel.addElement('lightbox', lightboxButton);
   },
   formatWidthHeightInputs: function formatWidthHeightInputs() {
     var inputsArr = document.getElementsByClassName('qs_container');
@@ -587,7 +600,7 @@ var App = {
       reader.onload = function (event) {
         var img = new Image();
         img.onload = function () {
-          context.drawImage(img, 0, 0);
+          context.drawImage(img, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
         };
         img.src = event.target.result;
         console.log(event.target);

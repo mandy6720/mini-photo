@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import QuickSettings from 'quicksettings';
+import * as basicLightbox from 'basiclightbox';
 
 import qsUtil from './util';
 import Palette from './palette';
@@ -43,7 +44,22 @@ export default {
     this.selectedSwatchElem = this.swatchPickers[swatchGroupNames[0]].children[0];
 
     panel.addFileChooser('Background Image', '', 'image/*', this.onChooseImage.bind(this));
-    // panel.hideTitle('Image');
+    
+    var lightbox = basicLightbox.create(`
+      <div class="modal">
+        <div class="lightbox-container clearfix">
+          <div class="background image-thumb" id="bg1"></div>
+          <div class="background image-thumb" id="bg2"></div>
+        </div>
+        <a class="close-button">x</a>
+      </div>`, {
+        beforeShow: (instance) => {
+          instance.element().querySelector('a').onclick = instance.close
+        }
+      });
+    
+    var lightboxButton = qsUtil.createButton("Open", "secondary", lightbox.show.bind(this));
+    panel.addElement('lightbox', lightboxButton)
 
 
   },

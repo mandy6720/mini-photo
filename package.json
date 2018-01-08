@@ -25,6 +25,7 @@
     "uglify-js-brunch": "^2.0.1"
   },
   "dependencies": {
+    "basiclightbox": "^4.0.0",
     "lodash": "^4.17.4",
     "paper": "^0.10.3",
     "quicksettings": "^3.0.1"

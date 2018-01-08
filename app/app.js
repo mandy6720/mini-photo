@@ -109,7 +109,7 @@ var App = {
       reader.onload = function(event){
       var img = new Image();
       img.onload = function(){
-        context.drawImage(img,0,0);
+        context.drawImage(img, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
       }
       img.src = event.target.result;
       console.log(event.target)
