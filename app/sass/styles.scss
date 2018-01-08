@@ -529,6 +529,7 @@ button {
     height: 95%;
     justify-content: space-between;
     .image-thumb {
+      box-sizing: border-box;
       width: 45%;
       height: 55%;
       background: pink;
@@ -536,8 +537,11 @@ button {
       min-height: 200px;
       margin: 1rem;
       background-size: cover;
+      &.selected {
+        border: 5px solid #6eedd8;
+      }
       &#bg1 {
-        background-image: url('img/background_1.jpg');
+        // background-image: url('img/background_1.jpg');
       }
       &#bg2 {
         background-image: url('img/background_2.jpg');

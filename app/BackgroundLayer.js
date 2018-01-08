@@ -52,9 +52,36 @@ export default {
           <div class="background image-thumb" id="bg2"></div>
         </div>
         <a class="close-button">x</a>
+        <button class="qs_button secondary">Select Image</button>
       </div>`, {
         beforeShow: (instance) => {
-          instance.element().querySelector('a').onclick = instance.close
+          // set images (otherwise, backgroundImage isn't "gettable" with JS)
+          instance.element().querySelector('#bg1').style.backgroundImage = "url('img/background_1.jpg')";
+          instance.element().querySelector('#bg2').style.backgroundImage = "url('img/background_2.jpg')";
+
+          instance.element().querySelector('a').onclick = instance.close;
+          instance.element().querySelector('button').onclick = () => {
+            // set selected if image is selected
+            // see this.onChooseImage
+             
+          }
+          var thumbs = instance.element().querySelectorAll('.image-thumb');
+          _.forEach(thumbs, (thumb) => {
+            thumb.onclick = (e) => {
+              // remove from others
+              // if not already selected, add to clicked
+              if (!e.target.classList.contains('selected')) {
+                var currentSelection = instance.element().querySelectorAll('.selected');
+                if (currentSelection.length > 0) {
+                  currentSelection[0].classList.remove('selected');
+                }
+                e.target.classList.add('selected');
+              } else {
+                e.target.classList.remove('selected');
+              }
+            }
+          });
+          
         }
       });
     
