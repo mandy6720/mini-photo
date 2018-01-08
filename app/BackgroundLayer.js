@@ -50,20 +50,32 @@ export default {
         <div class="lightbox-container clearfix">
           <div class="background image-thumb" id="bg1"></div>
           <div class="background image-thumb" id="bg2"></div>
+          <div class="img-sources">
+            <img src="img/background_1.jpg" id="bg1-source" class="img-source" />
+            <img src="img/background_2.jpg" id="bg2-source" class="img-source" />
+          </div>
         </div>
         <a class="close-button">x</a>
         <button class="qs_button secondary">Select Image</button>
       </div>`, {
         beforeShow: (instance) => {
           // set images (otherwise, backgroundImage isn't "gettable" with JS)
-          instance.element().querySelector('#bg1').style.backgroundImage = "url('img/background_1.jpg')";
-          instance.element().querySelector('#bg2').style.backgroundImage = "url('img/background_2.jpg')";
+          // instance.element().querySelector('#bg1').style.backgroundImage = "url('img/background_1.jpg')";
+          // instance.element().querySelector('#bg2').style.backgroundImage = "url('img/background_2.jpg')";
 
           instance.element().querySelector('a').onclick = instance.close;
           instance.element().querySelector('button').onclick = () => {
             // set selected if image is selected
             // see this.onChooseImage
-             
+            var selected = instance.element().querySelectorAll('.selected');
+            if (selected.length > 0) {
+              console.log(selected[0].id);
+              var sourceImg = `#${selected[0].id}-source`;
+              var selectedBgImage = instance.element().querySelector(sourceImg);
+              this.documentData.background.backgroundImage = selectedBgImage;
+              console.log(selectedBgImage);
+              this.handleChange();
+            }
           }
           var thumbs = instance.element().querySelectorAll('.image-thumb');
           _.forEach(thumbs, (thumb) => {

@@ -91,30 +91,31 @@ var App = {
     finalHeight = canvasHeight;
       finalWidth = (canvasHeight/imgHeight) * imgWidth;
     }
-    console.log(finalWidth, finalHeight)
 
     this.documentData.background.backgroundImageSize.x = finalWidth;
     this.documentData.background.backgroundImageSize.y = finalHeight;
   },
   drawBackground(canvas, context, resolution) {
     var backgroundImageSize = Object.assign({},this.documentData.background.backgroundImageSize);
-    console.log('dra bg', this.documentData.background.backgroundImageSize, backgroundImageSize, resolution)
+    console.log('draw bg', this.documentData.background, backgroundImageSize, resolution)
     resolution = resolution || 1;
     backgroundImageSize.x *= resolution;
     backgroundImageSize.y *= resolution;
     context.fillStyle = this.documentData.background.backgroundColor || "black";
     context.fillRect(0, 0, canvas.width, canvas.height);
-    if (this.documentData.background.backgroundImage.name !== '') {
+    if (typeof(this.documentData.background.backgroundImage).classList.contains('img-source')) {
+      console.log('hi')
+      context.drawImage(this.documentData.background.backgroundImage, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
+    } else if (this.documentData.background.backgroundImage.name !== '') {
       var reader = new FileReader();
       reader.onload = function(event){
-      var img = new Image();
-      img.onload = function(){
-        context.drawImage(img, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
+        var img = new Image();
+        img.onload = function(){
+          context.drawImage(img, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
+        }
+        img.src = event.target.result;
       }
-      img.src = event.target.result;
-      console.log(event.target)
-    }
-    reader.readAsDataURL(this.documentData.background.backgroundImage);  
+      reader.readAsDataURL(this.documentData.background.backgroundImage);  
       context.drawImage(this.documentData.background.backgroundImage, backgroundImageSize.x, backgroundImageSize.y, backgroundImageSize.x, backgroundImageSize.y);
     }
   },

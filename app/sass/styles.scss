@@ -528,6 +528,9 @@ button {
     width: 100%;
     height: 95%;
     justify-content: space-between;
+    .img-sources {
+      display: none;
+    }
     .image-thumb {
       box-sizing: border-box;
       width: 45%;
@@ -541,7 +544,7 @@ button {
         border: 5px solid #6eedd8;
       }
       &#bg1 {
-        // background-image: url('img/background_1.jpg');
+        background-image: url('img/background_1.jpg');
       }
       &#bg2 {
         background-image: url('img/background_2.jpg');

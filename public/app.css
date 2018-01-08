@@ -460,6 +460,8 @@ button {
     width: 100%;
     height: 95%;
     justify-content: space-between; }
+    .modal .lightbox-container .img-sources {
+      display: none; }
     .modal .lightbox-container .image-thumb {
       box-sizing: border-box;
       width: 45%;
@@ -471,6 +473,8 @@ button {
       background-size: cover; }
       .modal .lightbox-container .image-thumb.selected {
         border: 5px solid #6eedd8; }
+      .modal .lightbox-container .image-thumb#bg1 {
+        background-image: url("img/background_1.jpg"); }
       .modal .lightbox-container .image-thumb#bg2 {
         background-image: url("img/background_2.jpg"); }
   .modal .clearfix {

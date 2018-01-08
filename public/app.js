@@ -190,6 +190,8 @@ exports.default = {
   },
 
   createLayer: function createLayer(panel, documentData) {
+    var _this = this;
+
     this.panel = panel;
     this.documentData = documentData;
     this.selectedSwatchGroup = _palette2.default.getSwatchGroupNames()[0];
@@ -218,17 +220,25 @@ exports.default = {
 
     panel.addFileChooser('Background Image', '', 'image/*', this.onChooseImage.bind(this));
 
-    var lightbox = basicLightbox.create('\n      <div class="modal">\n        <div class="lightbox-container clearfix">\n          <div class="background image-thumb" id="bg1"></div>\n          <div class="background image-thumb" id="bg2"></div>\n        </div>\n        <a class="close-button">x</a>\n        <button class="qs_button secondary">Select Image</button>\n      </div>', {
+    var lightbox = basicLightbox.create('\n      <div class="modal">\n        <div class="lightbox-container clearfix">\n          <div class="background image-thumb" id="bg1"></div>\n          <div class="background image-thumb" id="bg2"></div>\n          <div class="img-sources">\n            <img src="img/background_1.jpg" id="bg1-source" class="img-source" />\n            <img src="img/background_2.jpg" id="bg2-source" class="img-source" />\n          </div>\n        </div>\n        <a class="close-button">x</a>\n        <button class="qs_button secondary">Select Image</button>\n      </div>', {
       beforeShow: function beforeShow(instance) {
         // set images (otherwise, backgroundImage isn't "gettable" with JS)
-        instance.element().querySelector('#bg1').style.backgroundImage = "url('img/background_1.jpg')";
-        instance.element().querySelector('#bg2').style.backgroundImage = "url('img/background_2.jpg')";
+        // instance.element().querySelector('#bg1').style.backgroundImage = "url('img/background_1.jpg')";
+        // instance.element().querySelector('#bg2').style.backgroundImage = "url('img/background_2.jpg')";
 
         instance.element().querySelector('a').onclick = instance.close;
         instance.element().querySelector('button').onclick = function () {
           // set selected if image is selected
           // see this.onChooseImage
-
+          var selected = instance.element().querySelectorAll('.selected');
+          if (selected.length > 0) {
+            console.log(selected[0].id);
+            var sourceImg = '#' + selected[0].id + '-source';
+            var selectedBgImage = instance.element().querySelector(sourceImg);
+            _this.documentData.background.backgroundImage = selectedBgImage;
+            console.log(selectedBgImage);
+            _this.handleChange();
+          }
         };
         var thumbs = instance.element().querySelectorAll('.image-thumb');
         _lodash2.default.forEach(thumbs, function (thumb) {
@@ -505,6 +515,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _quicksettings = require('quicksettings');
 
 var _quicksettings2 = _interopRequireDefault(_quicksettings);
@@ -607,20 +619,22 @@ var App = {
       finalHeight = canvasHeight;
       finalWidth = canvasHeight / imgHeight * imgWidth;
     }
-    console.log(finalWidth, finalHeight);
 
     this.documentData.background.backgroundImageSize.x = finalWidth;
     this.documentData.background.backgroundImageSize.y = finalHeight;
   },
   drawBackground: function drawBackground(canvas, context, resolution) {
     var backgroundImageSize = Object.assign({}, this.documentData.background.backgroundImageSize);
-    console.log('dra bg', this.documentData.background.backgroundImageSize, backgroundImageSize, resolution);
+    console.log('draw bg', this.documentData.background, backgroundImageSize, resolution);
     resolution = resolution || 1;
     backgroundImageSize.x *= resolution;
     backgroundImageSize.y *= resolution;
     context.fillStyle = this.documentData.background.backgroundColor || "black";
     context.fillRect(0, 0, canvas.width, canvas.height);
-    if (this.documentData.background.backgroundImage.name !== '') {
+    if (_typeof(this.documentData.background.backgroundImage.classList.contains('img-source'))) {
+      console.log('hi');
+      context.drawImage(this.documentData.background.backgroundImage, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
+    } else if (this.documentData.background.backgroundImage.name !== '') {
       var reader = new FileReader();
       reader.onload = function (event) {
         var img = new Image();
@@ -628,7 +642,6 @@ var App = {
           context.drawImage(img, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
         };
         img.src = event.target.result;
-        console.log(event.target);
       };
       reader.readAsDataURL(this.documentData.background.backgroundImage);
       context.drawImage(this.documentData.background.backgroundImage, backgroundImageSize.x, backgroundImageSize.y, backgroundImageSize.x, backgroundImageSize.y);
