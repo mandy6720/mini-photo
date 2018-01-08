@@ -95,14 +95,13 @@ export default {
         Graphic.createLayer(panel);
         break;
       case 'foreground':
-        Foreground.createLayer(panel);
+        Foreground.createLayer(panel, this.documentData);
         break;
       default:
         break;
     }
   },
   updatePanel(newPanelType) {
-    
     var panelInputs = document.getElementsByClassName('qs_container');
 
     for (var i = panelInputs.length - 1; i > 0; i--) {
@@ -111,7 +110,5 @@ export default {
       }
     }
     this.addLayerSpecificInputs(this.panel);
-
-    console.log('newPanelType', newPanelType);
   },
 }

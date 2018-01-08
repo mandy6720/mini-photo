@@ -186,7 +186,7 @@ exports.default = {
   documentData: null,
 
   handleChange: function handleChange() {
-    console.log("changed document");
+    console.log("changed document - background");
   },
 
   createLayer: function createLayer(panel, documentData) {
@@ -222,7 +222,6 @@ exports.default = {
 
     var lightbox = basicLightbox.create('\n      <div class="modal">\n        <div class="lightbox-container clearfix">\n          <div class="background image-thumb" id="bg1"></div>\n          <div class="background image-thumb" id="bg2"></div>\n          <div class="img-sources">\n            <img src="img/background_1.jpg" id="bg1-source" class="img-source" />\n            <img src="img/background_2.jpg" id="bg2-source" class="img-source" />\n          </div>\n        </div>\n        <a class="close-button">x</a>\n        <button class="qs_button secondary">Select Image</button>\n      </div>', {
       beforeShow: function beforeShow(instance) {
-        console.log(_this.documentData.background);
         if (_this.documentData.background.backgroundImage.classList && _this.documentData.background.backgroundImage.classList.contains('img-source')) {
           instance.element().querySelector('#' + _this.documentData.background.backgroundImage.id).classList.add('selected');
         }
@@ -243,11 +242,11 @@ exports.default = {
         var thumbs = instance.element().querySelectorAll('.image-thumb');
         _lodash2.default.forEach(thumbs, function (thumb) {
           thumb.onclick = function (e) {
-            // remove from others
             // if not already selected, add to clicked
             if (!e.target.classList.contains('selected')) {
               var currentSelection = instance.element().querySelectorAll('.selected');
               if (currentSelection.length > 0) {
+                // remove from others
                 currentSelection[0].classList.remove('selected');
               }
               e.target.classList.add('selected');
@@ -260,7 +259,7 @@ exports.default = {
     });
 
     var lightboxButton = _util2.default.createButton("Open", "secondary", lightbox.show.bind(this));
-    panel.addElement('lightbox', lightboxButton);
+    panel.addElement('Or choose from library:', lightboxButton);
   },
   formatWidthHeightInputs: function formatWidthHeightInputs() {
     var inputsArr = document.getElementsByClassName('qs_container');
@@ -327,12 +326,84 @@ var _quicksettings = require('quicksettings');
 
 var _quicksettings2 = _interopRequireDefault(_quicksettings);
 
+var _basiclightbox = require('basiclightbox');
+
+var basicLightbox = _interopRequireWildcard(_basiclightbox);
+
+var _util = require('./util');
+
+var _util2 = _interopRequireDefault(_util);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = {
+  panel: null,
+  documentData: null,
+  imageSize: null,
+
+  handleChange: function handleChange() {
+    console.log("changed document - foreground");
+  },
+
   createLayer: function createLayer(panel, documentData) {
-    panel.addText('FG', "hi i'm the foreground");
+    var _this = this;
+
     console.log(panel, documentData);
+
+    this.panel = panel;
+    this.documentData = documentData;
+
+    panel.addRange('Size', 0, 300, 100, 1, this.resizeImage.bind(this));
+
+    var lightbox = basicLightbox.create('\n      <div class="modal">\n        <div class="lightbox-container clearfix">\n          <div class="foreground image-thumb" id="fg1"></div>\n          <div class="foreground image-thumb" id="fg2"></div>\n          <div class="img-sources">\n            <img src="img/foreground.jpg" id="fg1-source" class="img-source-fg" />\n            <img src="img/foreground.jpg" id="fg2-source" class="img-source-fg" />\n          </div>\n        </div>\n        <a class="close-button">x</a>\n        <button class="qs_button secondary">Select Image</button>\n      </div>', {
+      beforeShow: function beforeShow(instance) {
+        // if (this.documentData.background.backgroundImage.classList && 
+        //   this.documentData.background.backgroundImage.classList.contains('img-source')) {
+        //   instance.element().querySelector(`#${this.documentData.background.backgroundImage.id}`).classList.add('selected');
+        // }
+        console.log(_this.documentData);
+        instance.element().querySelector('a').onclick = instance.close;
+        instance.element().querySelector('button').onclick = function () {
+          // set selected if image is selected
+          // see this.onChooseImage
+          var selected = instance.element().querySelectorAll('.selected');
+          if (selected.length > 0) {
+            var sourceImg = '#' + selected[0].id + '-source';
+            var selectedBgImage = instance.element().querySelector(sourceImg);
+            _this.documentData.foreground.foregroundImage = selectedBgImage;
+            _this.documentData.foreground.foregroundImageSize = 100;
+            _this.imageSize = 100;
+            instance.close();
+            _this.handleChange();
+          }
+        };
+        var thumbs = instance.element().querySelectorAll('.image-thumb');
+        _lodash2.default.forEach(thumbs, function (thumb) {
+          thumb.onclick = function (e) {
+            // if not already selected, add to clicked
+            if (!e.target.classList.contains('selected')) {
+              var currentSelection = instance.element().querySelectorAll('.selected');
+              if (currentSelection.length > 0) {
+                // remove from others
+                currentSelection[0].classList.remove('selected');
+              }
+              e.target.classList.add('selected');
+            } else {
+              e.target.classList.remove('selected');
+            }
+          };
+        });
+      }
+    });
+
+    var lightboxButton = _util2.default.createButton("Open", "secondary", lightbox.show.bind(this));
+    panel.addElement('Or choose from library:', lightboxButton);
+  },
+  resizeImage: function resizeImage(e) {
+    this.imageSize = e;
+    console.log('resize to', e);
   }
 };
 });
@@ -486,14 +557,13 @@ exports.default = {
         _GraphicLayer2.default.createLayer(panel);
         break;
       case 'foreground':
-        _ForegroundLayer2.default.createLayer(panel);
+        _ForegroundLayer2.default.createLayer(panel, this.documentData);
         break;
       default:
         break;
     }
   },
   updatePanel: function updatePanel(newPanelType) {
-
     var panelInputs = document.getElementsByClassName('qs_container');
 
     for (var i = panelInputs.length - 1; i > 0; i--) {
@@ -502,8 +572,6 @@ exports.default = {
       }
     }
     this.addLayerSpecificInputs(this.panel);
-
-    console.log('newPanelType', newPanelType);
   }
 };
 });
@@ -514,8 +582,6 @@ exports.default = {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _quicksettings = require('quicksettings');
 
@@ -532,6 +598,10 @@ var _MainPanel2 = _interopRequireDefault(_MainPanel);
 var _BackgroundLayer = require('./BackgroundLayer');
 
 var _BackgroundLayer2 = _interopRequireDefault(_BackgroundLayer);
+
+var _ForegroundLayer = require('./ForegroundLayer');
+
+var _ForegroundLayer2 = _interopRequireDefault(_ForegroundLayer);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -584,6 +654,7 @@ var App = {
     _MainPanel2.default.updateCanvas = this.handleSelectLayer.bind(this);
 
     _BackgroundLayer2.default.handleChange = this.refreshCanvas.bind(this);
+    _ForegroundLayer2.default.handleChange = this.refreshCanvas.bind(this);
 
     this.refreshCanvas();
   },
@@ -625,13 +696,12 @@ var App = {
   },
   drawBackground: function drawBackground(canvas, context, resolution) {
     var backgroundImageSize = Object.assign({}, this.documentData.background.backgroundImageSize);
-    console.log('draw bg', this.documentData.background, backgroundImageSize, resolution);
     resolution = resolution || 1;
     backgroundImageSize.x *= resolution;
     backgroundImageSize.y *= resolution;
     context.fillStyle = this.documentData.background.backgroundColor || "black";
     context.fillRect(0, 0, canvas.width, canvas.height);
-    if (_typeof(this.documentData.background.backgroundImage.classList.contains('img-source'))) {
+    if (this.documentData.background.backgroundImage.classList && this.documentData.background.backgroundImage.classList.contains('img-source')) {
       context.drawImage(this.documentData.background.backgroundImage, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
     } else if (this.documentData.background.backgroundImage.name !== '') {
       var reader = new FileReader();
@@ -645,6 +715,9 @@ var App = {
       reader.readAsDataURL(this.documentData.background.backgroundImage);
       context.drawImage(this.documentData.background.backgroundImage, backgroundImageSize.x, backgroundImageSize.y, backgroundImageSize.x, backgroundImageSize.y);
     }
+  },
+  drawForeground: function drawForeground(canvas, context, scale) {
+    console.log('foreground', canvas, context, scale);
   },
   refreshCanvas: function refreshCanvas(canvas, context, resolution) {
     context = context || this.canvasContext;

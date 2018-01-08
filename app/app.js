@@ -3,6 +3,7 @@ import _ from 'lodash';
 
 import MainPanel from './MainPanel';
 import Background from './BackgroundLayer';
+import Foreground from './ForegroundLayer';
 
 var App = {
   // elems
@@ -55,6 +56,7 @@ var App = {
     MainPanel.updateCanvas = this.handleSelectLayer.bind(this);
 
     Background.handleChange = this.refreshCanvas.bind(this);
+    Foreground.handleChange = this.refreshCanvas.bind(this);
 
     this.refreshCanvas()
   },
@@ -97,13 +99,12 @@ var App = {
   },
   drawBackground(canvas, context, resolution) {
     var backgroundImageSize = Object.assign({},this.documentData.background.backgroundImageSize);
-    console.log('draw bg', this.documentData.background, backgroundImageSize, resolution)
     resolution = resolution || 1;
     backgroundImageSize.x *= resolution;
     backgroundImageSize.y *= resolution;
     context.fillStyle = this.documentData.background.backgroundColor || "black";
     context.fillRect(0, 0, canvas.width, canvas.height);
-    if (typeof(this.documentData.background.backgroundImage).classList.contains('img-source')) {
+    if (this.documentData.background.backgroundImage.classList && this.documentData.background.backgroundImage.classList.contains('img-source')) {
       context.drawImage(this.documentData.background.backgroundImage, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
     } else if (this.documentData.background.backgroundImage.name !== '') {
       var reader = new FileReader();
@@ -117,6 +118,9 @@ var App = {
       reader.readAsDataURL(this.documentData.background.backgroundImage);  
       context.drawImage(this.documentData.background.backgroundImage, backgroundImageSize.x, backgroundImageSize.y, backgroundImageSize.x, backgroundImageSize.y);
     }
+  },
+  drawForeground(canvas, context, scale) {
+    console.log('foreground', canvas, context, scale)
   },
   refreshCanvas(canvas, context, resolution) {
     context = context || this.canvasContext;

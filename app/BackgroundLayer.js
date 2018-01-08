@@ -11,7 +11,7 @@ export default {
   selectedSwatchGroup: null,
   documentData: null,
 
-  handleChange : function() {console.log("changed document")},
+  handleChange : function() {console.log("changed document - background")},
 
   createLayer(panel, documentData) {
     this.panel = panel;
@@ -59,7 +59,6 @@ export default {
         <button class="qs_button secondary">Select Image</button>
       </div>`, {
         beforeShow: (instance) => {
-          console.log(this.documentData.background);
           if (this.documentData.background.backgroundImage.classList && 
             this.documentData.background.backgroundImage.classList.contains('img-source')) {
             instance.element().querySelector(`#${this.documentData.background.backgroundImage.id}`).classList.add('selected');
@@ -81,11 +80,11 @@ export default {
           var thumbs = instance.element().querySelectorAll('.image-thumb');
           _.forEach(thumbs, (thumb) => {
             thumb.onclick = (e) => {
-              // remove from others
               // if not already selected, add to clicked
               if (!e.target.classList.contains('selected')) {
                 var currentSelection = instance.element().querySelectorAll('.selected');
                 if (currentSelection.length > 0) {
+                  // remove from others
                   currentSelection[0].classList.remove('selected');
                 }
                 e.target.classList.add('selected');
@@ -99,7 +98,7 @@ export default {
       });
     
     var lightboxButton = qsUtil.createButton("Open", "secondary", lightbox.show.bind(this));
-    panel.addElement('lightbox', lightboxButton)
+    panel.addElement('Or choose from library:', lightboxButton)
 
 
   },
