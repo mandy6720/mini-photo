@@ -112,9 +112,6 @@ export default {
     heightElem.id = 'height';
     heightElem.classList += " half-width";
   },
-  onSelectColor(info) {
-    console.log('Selected color', info.value);
-  },
   onChooseImage(fileObj) {
     // var fileURL = URL.createObjectURL(fileObj);
     // this.documentData.background.backgroundImage.src = fileURL; 

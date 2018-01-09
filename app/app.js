@@ -14,6 +14,8 @@ var App = {
 
   // document data
 	documentData : {
+    canMouseX: null,
+    canMouseY: null,
     workspaceSize : {x: 0, y: 0},
     background: {
       backgroundImageSize : {x: 0, y: 0},
@@ -41,15 +43,17 @@ var App = {
   },
 
   // other state
+  canvasOffset: null,
 	canvasContext : null,
   hiResContext : null,
   hiResScale : 4,
   selectedLayer : 'background',
+  isDragging: false,
 
   init(rootElem) {
     var canvasElem = document.getElementById("app-canvas");
     this.canvasElem = canvasElem;
-		this.canvasContext = canvasElem.getContext('2d');
+    this.canvasContext = canvasElem.getContext('2d');
     this.hiResCanvasElem = document.createElement("canvas");
     this.hiResContext = this.hiResCanvasElem.getContext('2d');
     this.rootElem = rootElem;
@@ -61,6 +65,12 @@ var App = {
     QuickSettings.useExtStyleSheet();
 
     this.fitCanvasToWindow();
+
+    // add mouse event listeners
+    this.canvasElem.addEventListener('mousedown', this.handleMouseDown.bind(this))
+    this.canvasElem.addEventListener('mouseup', this.handleMouseUp.bind(this));
+    this.canvasElem.addEventListener('mousemove', this.handleMouseMove.bind(this));
+    // this.canvasElem.addEventListener('mouseout', (e) => {console.log(e)});
     
     // inset panel here
     MainPanel.init(rootElem, this.documentData);
@@ -183,7 +193,7 @@ var App = {
     
     if (this.documentData.foreground.foregroundImage && this.documentData.foreground.foregroundImage.classList && 
       this.documentData.foreground.foregroundImage.classList.contains('img-source-fg')) {
-      context.drawImage(this.documentData.foreground.foregroundImage, 0, 0, foregroundImageSize.x, foregroundImageSize.y);
+      context.drawImage(this.documentData.foreground.foregroundImage, this.documentData.foreground.foregroundImagePosition.x, this.documentData.foreground.foregroundImagePosition.y, foregroundImageSize.x, foregroundImageSize.y);
     }
   },
   refreshCanvas(canvas, context, resolution) {
@@ -192,6 +202,39 @@ var App = {
     resolution = resolution || 1;
     var backgroundImageSize = this.documentData.background.backgroundImageSize;
     this.drawBackground(canvas, context, resolution);
+  },
+  handleMouseDown(e) {
+    this.documentData.canMouseX = event.clientX;
+    this.documentData.canMouseY = event.clientY;
+    this.isDragging = true;
+  },
+  handleMouseUp(e) {
+    this.documentData.canMouseX = null;
+    this.documentData.canMouseY = null;
+    this.isDragging = false;
+  },
+  handleMouseMove(e) {
+    if (this.isDragging) {
+      // get selected layer
+      console.log(this.selectedLayer)
+      // make transformations
+      console.log(e.clientX, e.clientY, e);
+      this.documentData[this.selectedLayer]
+      // re-draw canvas
+
+      switch (this.selectedLayer) {
+        case 'foreground':
+          this.documentData.foreground.foregroundImagePosition.x = e.clientX;
+          this.documentData.foreground.foregroundImagePosition.y = e.clientY;
+          this.refreshCanvas(this.canvasElem, this.canvasContext);
+          break;
+        default:
+          break;
+      }
+    }
+  },
+  handleMouseOut(e) {
+    console.log('mouse out', e, this.selectedLayer);
   },
 }
 
