@@ -148,12 +148,374 @@ var __makeRelativeRequire = function(require, mappings, pref) {
     return require(name);
   }
 };
-require.register("app.js", function(exports, require, module) {
+require.register("BackgroundLayer.js", function(exports, require, module) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _quicksettings = require('quicksettings');
+
+var _quicksettings2 = _interopRequireDefault(_quicksettings);
+
+var _basiclightbox = require('basiclightbox');
+
+var basicLightbox = _interopRequireWildcard(_basiclightbox);
+
+var _util = require('./util');
+
+var _util2 = _interopRequireDefault(_util);
+
+var _palette = require('./palette');
+
+var _palette2 = _interopRequireDefault(_palette);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+  panel: null,
+  swatchPickers: {},
+  selectedSwatchGroup: null,
+  documentData: null,
+
+  handleChange: function handleChange() {
+    console.log("changed document");
+  },
+
+  createLayer: function createLayer(panel, documentData) {
+    var _this = this;
+
+    this.panel = panel;
+    this.documentData = documentData;
+    this.selectedSwatchGroup = _palette2.default.getSwatchGroupNames()[0];
+
+    panel.addNumber('Width', 0, documentData !== null ? documentData.workspaceSize.x : 5000, documentData.workspaceSize.x);
+    panel.addNumber('Height', 0, documentData !== null ? documentData.workspaceSize.x : 2000, documentData.workspaceSize.y);
+    this.formatWidthHeightInputs();
+
+    var swatchGroupNames = _palette2.default.getSwatchGroupNames();
+    _util2.default.addCustomTitle(panel, "Choose Color Group", "Color Group_Title");
+    panel.addDropDown("Color Group", swatchGroupNames, this.onSelectSwatchGroup.bind(this));
+    panel.hideTitle("Color Group");
+
+    _lodash2.default.each(swatchGroupNames, function (swatchGroupName) {
+      var swatchPicker = _util2.default.createSwatchPicker(_palette2.default.getSwatchesFor(swatchGroupName), this.onSelectSwatch.bind(this));
+      this.swatchPickers[swatchGroupName] = swatchPicker;
+      panel.addElement(swatchGroupName, swatchPicker);
+
+      panel.hideTitle(swatchGroupName);
+      panel.hideControl(swatchGroupName);
+    }.bind(this));
+
+    panel.showControl(swatchGroupNames[0]);
+    _util2.default.addSwatchHighlightByIndex(this.swatchPickers[swatchGroupNames[0]], 0);
+    this.selectedSwatchElem = this.swatchPickers[swatchGroupNames[0]].children[0];
+
+    panel.addFileChooser('Background Image', '', 'image/*', this.onChooseImage.bind(this));
+
+    var lightbox = basicLightbox.create('\n      <div class="modal">\n        <div class="lightbox-container clearfix">\n          <div class="background image-thumb" id="bg1"></div>\n          <div class="background image-thumb" id="bg2"></div>\n          <div class="img-sources">\n            <img src="img/background_1.jpg" id="bg1-source" class="img-source" />\n            <img src="img/background_2.jpg" id="bg2-source" class="img-source" />\n          </div>\n        </div>\n        <a class="close-button">x</a>\n        <button class="qs_button secondary">Select Image</button>\n      </div>', {
+      beforeShow: function beforeShow(instance) {
+        console.log(_this.documentData.background);
+        if (_this.documentData.background.backgroundImage.classList && _this.documentData.background.backgroundImage.classList.contains('img-source')) {
+          instance.element().querySelector('#' + _this.documentData.background.backgroundImage.id).classList.add('selected');
+        }
+
+        instance.element().querySelector('a').onclick = instance.close;
+        instance.element().querySelector('button').onclick = function () {
+          // set selected if image is selected
+          // see this.onChooseImage
+          var selected = instance.element().querySelectorAll('.selected');
+          if (selected.length > 0) {
+            var sourceImg = '#' + selected[0].id + '-source';
+            var selectedBgImage = instance.element().querySelector(sourceImg);
+            _this.documentData.background.backgroundImage = selectedBgImage;
+            instance.close();
+            _this.handleChange();
+          }
+        };
+        var thumbs = instance.element().querySelectorAll('.image-thumb');
+        _lodash2.default.forEach(thumbs, function (thumb) {
+          thumb.onclick = function (e) {
+            // remove from others
+            // if not already selected, add to clicked
+            if (!e.target.classList.contains('selected')) {
+              var currentSelection = instance.element().querySelectorAll('.selected');
+              if (currentSelection.length > 0) {
+                currentSelection[0].classList.remove('selected');
+              }
+              e.target.classList.add('selected');
+            } else {
+              e.target.classList.remove('selected');
+            }
+          };
+        });
+      }
+    });
+
+    var lightboxButton = _util2.default.createButton("Open", "secondary", lightbox.show.bind(this));
+    panel.addElement('lightbox', lightboxButton);
+  },
+  formatWidthHeightInputs: function formatWidthHeightInputs() {
+    var inputsArr = document.getElementsByClassName('qs_container');
+    var widthElem = inputsArr[2];
+    var heightElem = inputsArr[3];
+    widthElem.id = 'width';
+    widthElem.classList += " half-width";
+    heightElem.id = 'height';
+    heightElem.classList += " half-width";
+  },
+  onSelectColor: function onSelectColor(info) {
+    console.log('Selected color', info.value);
+  },
+  onChooseImage: function onChooseImage(fileObj) {
+    // var fileURL = URL.createObjectURL(fileObj);
+    // this.documentData.background.backgroundImage.src = fileURL; 
+    console.log(this.documentData.background, fileObj);
+    this.documentData.background.backgroundImage = fileObj;
+    this.handleChange();
+  },
+  onSelectSwatchGroup: function onSelectSwatchGroup(info) {
+    // there's currently no way to edit dropdown contents at runtime
+    // (without digging into private properties of the panel),
+    // so we're just hiding & showing specific controls
+    console.log(info, this.selectedSwatchGroup);
+    var selection = info.value;
+    this.panel.hideControl(this.selectedSwatchGroup);
+    this.panel.showControl(selection);
+
+    this.selectedSwatchGroup = selection;
+    if (this.selectedSwatchElem) {
+      _util2.default.removeSwatchHighlight(this.selectedSwatchElem);
+    }
+    _util2.default.addSwatchHighlightByIndex(this.swatchPickers[selection], 0);
+    this.selectedSwatchElem = this.swatchPickers[selection].children[0];
+
+    this.handleChange();
+  },
+  onSelectSwatch: function onSelectSwatch(swatch, elem) {
+    if (this.selectedSwatchElem) {
+      _util2.default.removeSwatchHighlight(this.selectedSwatchElem);
+    }
+    _util2.default.addSwatchHighlight(elem);
+    this.selectedSwatchElem = elem;
+    this.documentData.background.backgroundColor = swatch.color;
+    this.handleChange();
+    console.log(this.documentData, swatch);
+  }
+};
+});
+
+;require.register("ForegroundLayer.js", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _quicksettings = require('quicksettings');
+
+var _quicksettings2 = _interopRequireDefault(_quicksettings);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+  createLayer: function createLayer(panel, documentData) {
+    panel.addText('FG', "hi i'm the foreground");
+    console.log(panel, documentData);
+  }
+};
+});
+
+;require.register("GraphicLayer.js", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _quicksettings = require('quicksettings');
+
+var _quicksettings2 = _interopRequireDefault(_quicksettings);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+  createLayer: function createLayer(panel, documentData) {
+    console.log(panel, documentData);
+    panel.addText('FG', "hi i'm the graphic layer");
+  }
+};
+});
+
+;require.register("MainPanel.js", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _quicksettings = require('quicksettings');
+
+var _quicksettings2 = _interopRequireDefault(_quicksettings);
+
+var _util = require('./util');
+
+var _util2 = _interopRequireDefault(_util);
+
+var _BackgroundLayer = require('./BackgroundLayer');
+
+var _BackgroundLayer2 = _interopRequireDefault(_BackgroundLayer);
+
+var _ForegroundLayer = require('./ForegroundLayer');
+
+var _ForegroundLayer2 = _interopRequireDefault(_ForegroundLayer);
+
+var _GraphicLayer = require('./GraphicLayer');
+
+var _GraphicLayer2 = _interopRequireDefault(_GraphicLayer);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+  panel: null,
+  documentData: null,
+  selectedLayer: 'background',
+  rootElem: null,
+
+  handleChange: function handleChange() {
+    console.log("changed document");
+  },
+  updateCanvas: function updateCanvas() {
+    console.log("changed layer");
+  },
+  handleChooseBackgroundImage: function handleChooseBackgroundImage(fileObject) {
+    console.log("selected background image", fileObject);
+  },
+
+  init: function init(rootElem, documentData) {
+    var panel = _quicksettings2.default.create(5, 5, 'Layer', rootElem);
+    this.panel = panel;
+    this.rootElem = rootElem;
+    this.documentData = documentData;
+    this.addCommonInputs(panel);
+  },
+  addLayers: function addLayers() {
+    var parent = document.getElementById('layers-img');
+    var layers = ['background', 'bg-graphic', 'foreground', 'fg-graphic'];
+    layers.forEach(function (layer, index) {
+      var el = document.createElement("div");
+      el.id = layer;
+      el.classList = 'layer';
+      if (index == 0) {
+        el.className += ' selected';
+      }
+      parent.append(el);
+    });
+  },
+  setLayerImg: function setLayerImg(layer) {
+    console.log('Set layer to', layer);
+    var layerElems = document.getElementsByClassName('layer');
+    _lodash2.default.forEach(layerElems, function (item) {
+      item.classList = 'layer';
+    });
+    document.getElementById(layer).classList += ' selected';
+  },
+  onSelectLayer: function onSelectLayer(info) {
+    switch (info.value) {
+      case 'Background':
+        this.handleSelectLayer('background');
+        break;
+      case 'Background Graphic':
+        this.handleSelectLayer('bg-graphic');
+        break;
+      case 'Foreground':
+        this.handleSelectLayer('foreground');
+        break;
+      case 'Foreground Graphic':
+        this.handleSelectLayer('fg-graphic');
+        break;
+      default:
+        break;
+    }
+  },
+  handleSelectLayer: function handleSelectLayer(newLayer) {
+    this.selectedLayer = newLayer;
+    this.updatePanel(newLayer);
+    this.setLayerImg(newLayer);
+    this.updateCanvas(newLayer);
+  },
+  addCommonInputs: function addCommonInputs(panel, newPanelType) {
+    var layersImgContainer = document.createElement("div");
+    layersImgContainer.id = "layers-img";
+    panel.addElement('', layersImgContainer);
+    this.addLayers();
+
+    panel.addDropDown('Layer Select', ['Background', 'Background Graphic', 'Foreground', 'Foreground Graphic'], this.onSelectLayer.bind(this));
+
+    document.getElementsByClassName('qs_container')[0].id = 'layers-img-container';
+    document.getElementsByClassName('qs_container')[1].id = 'layers-select-dropdown';
+    console.log(this.documentData);
+    this.addLayerSpecificInputs(panel);
+  },
+  addLayerSpecificInputs: function addLayerSpecificInputs(panel) {
+    switch (this.selectedLayer) {
+      case 'background':
+        _BackgroundLayer2.default.createLayer(panel, this.documentData);
+        break;
+      case 'bg-graphic':
+      case 'fg-graphic':
+        _GraphicLayer2.default.createLayer(panel);
+        break;
+      case 'foreground':
+        _ForegroundLayer2.default.createLayer(panel);
+        break;
+      default:
+        break;
+    }
+  },
+  updatePanel: function updatePanel(newPanelType) {
+
+    var panelInputs = document.getElementsByClassName('qs_container');
+
+    for (var i = panelInputs.length - 1; i > 0; i--) {
+      if (panelInputs[i].id !== 'layers-img-container' && panelInputs[i].id !== 'layers-select-dropdown') {
+        panelInputs[i].remove();
+      }
+    }
+    this.addLayerSpecificInputs(this.panel);
+
+    console.log('newPanelType', newPanelType);
+  }
+};
+});
+
+;require.register("app.js", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _quicksettings = require('quicksettings');
 
@@ -162,6 +524,14 @@ var _quicksettings2 = _interopRequireDefault(_quicksettings);
 var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
+
+var _MainPanel = require('./MainPanel');
+
+var _MainPanel2 = _interopRequireDefault(_MainPanel);
+
+var _BackgroundLayer = require('./BackgroundLayer');
+
+var _BackgroundLayer2 = _interopRequireDefault(_BackgroundLayer);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -175,20 +545,21 @@ var App = {
   // document data
   documentData: {
     workspaceSize: { x: 0, y: 0 },
-    backgroundImageSize: { x: 0, y: 0 },
-    backgroundImage: new Image(),
-    grids: [],
-    magnets: [],
-    masks: []
+    background: {
+      backgroundImageSize: { x: 0, y: 0 },
+      backgroundImage: new Image(),
+      backgroundColor: '#000'
+    },
+    backgroundGraphic: {},
+    foreground: {},
+    foregroundGraphic: {}
   },
 
   // other state
   canvasContext: null,
   hiResContext: null,
   hiResScale: 4,
-  isShowingSettings: true,
-  isShowingMagnets: true,
-  isShowingMasks: true,
+  selectedLayer: 'background',
 
   init: function init(rootElem) {
     var canvasElem = document.getElementById("app-canvas");
@@ -205,6 +576,16 @@ var App = {
     _quicksettings2.default.useExtStyleSheet();
 
     this.fitCanvasToWindow();
+
+    // inset panel here
+    _MainPanel2.default.init(rootElem, this.documentData);
+    _MainPanel2.default.documentData = this.documentData;
+    _MainPanel2.default.selectedLayer = this.selectedLayer;
+    _MainPanel2.default.updateCanvas = this.handleSelectLayer.bind(this);
+
+    _BackgroundLayer2.default.handleChange = this.refreshCanvas.bind(this);
+
+    this.refreshCanvas();
   },
   fitCanvasToWindow: function fitCanvasToWindow() {
     this.canvasElem.width = this.rootElem.clientWidth;
@@ -218,6 +599,60 @@ var App = {
 
     this.svgElem.setAttribute('width', this.canvasElem.width);
     this.svgElem.setAttribute('height', this.canvasElem.height);
+
+    this.fitBackgroundToCanvas();
+  },
+  handleSelectLayer: function handleSelectLayer(info) {
+    console.log('[app.js] Changed layer to', info);
+    this.selectedLayer = info;
+  },
+  fitBackgroundToCanvas: function fitBackgroundToCanvas() {
+    var imgWidth = this.documentData.background.backgroundImage.width;
+    var imgHeight = this.documentData.background.backgroundImage.height;
+    var canvasWidth = this.canvasElem.clientWidth;
+    var canvasHeight = this.canvasElem.clientHeight;
+    var finalWidth, finalHeight;
+    finalWidth = canvasWidth;
+    finalHeight = imgWidth !== 0 && imgHeight !== 0 ? canvasWidth / imgWidth * imgHeight : canvasHeight;
+
+    if (finalHeight > canvasHeight) {
+      finalHeight = canvasHeight;
+      finalWidth = canvasHeight / imgHeight * imgWidth;
+    }
+
+    this.documentData.background.backgroundImageSize.x = finalWidth;
+    this.documentData.background.backgroundImageSize.y = finalHeight;
+  },
+  drawBackground: function drawBackground(canvas, context, resolution) {
+    var backgroundImageSize = Object.assign({}, this.documentData.background.backgroundImageSize);
+    console.log('draw bg', this.documentData.background, backgroundImageSize, resolution);
+    resolution = resolution || 1;
+    backgroundImageSize.x *= resolution;
+    backgroundImageSize.y *= resolution;
+    context.fillStyle = this.documentData.background.backgroundColor || "black";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    if (_typeof(this.documentData.background.backgroundImage.classList.contains('img-source'))) {
+      context.drawImage(this.documentData.background.backgroundImage, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
+    } else if (this.documentData.background.backgroundImage.name !== '') {
+      var reader = new FileReader();
+      reader.onload = function (event) {
+        var img = new Image();
+        img.onload = function () {
+          context.drawImage(img, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(this.documentData.background.backgroundImage);
+      context.drawImage(this.documentData.background.backgroundImage, backgroundImageSize.x, backgroundImageSize.y, backgroundImageSize.x, backgroundImageSize.y);
+    }
+  },
+  refreshCanvas: function refreshCanvas(canvas, context, resolution) {
+    context = context || this.canvasContext;
+    canvas = canvas || this.canvasElem;
+    resolution = resolution || 1;
+    var backgroundImageSize = this.documentData.background.backgroundImageSize;
+    this.drawBackground(canvas, context, resolution);
+    // create functions for each layer and pile on top of eachother
   }
 };
 
@@ -245,7 +680,145 @@ function init() {
 document.addEventListener('DOMContentLoaded', init);
 });
 
-require.register("watson-colors.js", function(exports, require, module) {
+require.register("palette.js", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _watsonColors = require('./watson-colors');
+
+var _watsonColors2 = _interopRequireDefault(_watsonColors);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// ick. this is kinda messy internally.
+// should probably have a load step that processes the swatch data
+// rather than constantly having to order things by name on the fly
+
+exports.default = {
+	_swatchCollection: _watsonColors2.default,
+
+	getDefaultSwatchGroup: function getDefaultSwatchGroup() {
+		return this.getSwatchGroupByName(this.getSwatchGroupNames()[0]);
+	},
+	getDefaultColor: function getDefaultColor() {
+		var defaultGroupName = this.getDefaultSwatchGroup().name;
+		// return this.getSwatchValue(defaultGroupName, this.getSwatchNamesFor(defaultGroupName)[0]);
+		return this.getSwatchesFor(defaultGroupName)[0].color;
+	},
+	getSwatchGroupByName: function getSwatchGroupByName(groupName) {
+		return _lodash2.default.find(this._swatchCollection, function (swatchGroup) {
+			return swatchGroup.name == groupName;
+		});
+	},
+	getSwatchGroupNames: function getSwatchGroupNames() {
+		return _lodash2.default.map(this._swatchCollection, function (swatchGroup) {
+			return swatchGroup.name;
+		}).sort();
+	},
+	getSwatchNamesFor: function getSwatchNamesFor(swatchGroupName) {
+		return _lodash2.default.map(this.getSwatchesFor(swatchGroupName), function (swatch) {
+			return swatch.name;
+		}).sort();
+	},
+	getSwatchesFor: function getSwatchesFor(swatchGroupName) {
+		return this.getSwatchGroupByName(swatchGroupName).swatches;
+	},
+	getSwatchValue: function getSwatchValue(swatchGroupName, swatchName) {
+		return _lodash2.default.find(this.getSwatchesFor(swatchGroupName), function (swatch) {
+			return swatch.name == swatchName;
+		}).color;
+	}
+};
+});
+
+require.register("util.js", function(exports, require, module) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _lodash = require("lodash");
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+	createButton: function createButton(name, className, action) {
+		var button = document.createElement("button");
+		button.innerText = name;
+		button.className = "qs_button " + className;
+		button.onclick = action;
+		return button;
+	},
+	createButtonGroup: function createButtonGroup(buttonElems, className) {
+		var groupDiv = document.createElement("div");
+		groupDiv.className = className;
+		_lodash2.default.each(buttonElems, function (button) {
+			groupDiv.appendChild(button);
+		});
+		return groupDiv;
+	},
+	setButtonEnabled: function setButtonEnabled(buttonElem, enabled) {
+		if (enabled) {
+			buttonElem.removeAttribute('disabled');
+			buttonElem.classList.remove('disabled');
+		} else {
+			buttonElem.setAttribute('disabled', true);
+			buttonElem.classList.add('disabled');
+		}
+	},
+	createSwatchPicker: function createSwatchPicker(swatches, clickHandler) {
+		var container = document.createElement("div");
+		container.className = "swatch-picker";
+
+		_lodash2.default.each(swatches, function (swatch) {
+			var swatchElem = document.createElement("div");
+			swatchElem.className = "color-swatch";
+			swatchElem.setAttribute("style", "background-color: " + swatch.color);
+			swatchElem.setAttribute("data-swatch", swatch.color);
+			swatchElem.onclick = function (e) {
+				clickHandler(swatch, swatchElem);
+			};
+			container.appendChild(swatchElem);
+		});
+		return container;
+	},
+	addSwatchHighlightByIndex: function addSwatchHighlightByIndex(swatchpicker, index) {
+		if (swatchpicker.children.length > 0) {
+			this.addSwatchHighlight(swatchpicker.children[0]);
+		}
+	},
+	addSwatchHighlight: function addSwatchHighlight(swatchElem) {
+		swatchElem.classList.add("selected");
+	},
+	removeSwatchHighlight: function removeSwatchHighlight(swatchElem) {
+		swatchElem.classList.remove("selected");
+	},
+	addCustomTitle: function addCustomTitle(qsPanel, title, refName) {
+		// it was important for the design to remove the separator
+		// and treat titles consistently.
+		// this is a way of achieving that.
+		refName = refName || title + "_title";
+		var div = document.createElement("div");
+		div.className = "custom-title";
+		div.innerText = title;
+		qsPanel.addElement(refName, div);
+		qsPanel.hideTitle(refName);
+		return refName;
+	}
+};
+});
+
+;require.register("watson-colors.js", function(exports, require, module) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
