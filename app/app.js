@@ -19,6 +19,7 @@ var App = {
       backgroundImageSize : {x: 0, y: 0},
       backgroundImage : new Image(),
       backgroundColor: '#000',
+      backgroundImageFile: null,
     },
     backgroundGraphic: {
 
@@ -26,8 +27,9 @@ var App = {
     foreground: {
       foregroundImage: null,
       foregroundImageSize: {
-        x: 100,
-        y: 100
+        width: null,
+        height: null,
+        scale: 100
       }
     },
     foregroundGraphic: {},
@@ -62,7 +64,7 @@ var App = {
     MainPanel.updateCanvas = this.handleSelectLayer.bind(this);
 
     Background.handleChange = this.refreshCanvas.bind(this);
-    Foreground.handleChange = this.drawForeground.bind(this, this.canvasElem, this.canvasContext);
+    Foreground.handleChange = this.refreshCanvas.bind(this, this.canvasElem, this.canvasContext);
 
     this.refreshCanvas()
   },
@@ -104,47 +106,66 @@ var App = {
     this.documentData.background.backgroundImageSize.y = finalHeight;
   },
   drawBackground(canvas, context, resolution) {
-    var backgroundImageSize = Object.assign({},this.documentData.background.backgroundImageSize);
-    resolution = resolution || 1;
-    backgroundImageSize.x *= resolution;
-    backgroundImageSize.y *= resolution;
-    context.fillStyle = this.documentData.background.backgroundColor || "black";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    if (this.documentData.background.backgroundImage.classList && this.documentData.background.backgroundImage.classList.contains('img-source')) {
-      context.drawImage(this.documentData.background.backgroundImage, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
-    } else if (this.documentData.background.backgroundImage.name !== '') {
-      var reader = new FileReader();
-      var img;
-      reader.onload = function(event){
+    var drawBgPromise = new Promise((resolve, reject) => {
+      var backgroundImageSize = Object.assign({},this.documentData.background.backgroundImageSize);
+      resolution = resolution || 1;
+      backgroundImageSize.x *= resolution;
+      backgroundImageSize.y *= resolution;
+      context.fillStyle = this.documentData.background.backgroundColor || "black";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      if (this.documentData.background.backgroundImage.classList && this.documentData.background.backgroundImage.classList.contains('img-source')) {
+        context.drawImage(this.documentData.background.backgroundImage, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
+        resolve();
+      } else if (this.documentData.background.backgroundImage.name !== '') {
+        // const ImageLoadPromise = new Promise((resolve, reject) => {
+          var reader = new FileReader();
+          var img;
+          var docData = this.documentData;
+          reader.onload = function(event){
+            docData.background.backgroundImageFile = event.target.result;
+            img = new Image();
+            img.onload = function(){
+              context.drawImage(img, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
+              resolve(img);
+            }
+            img.src = event.target.result;
+          }
+          reader.readAsDataURL(this.documentData.background.backgroundImage);
+        // });
+        // ImageLoadPromise.then(img => {
+        //   this.drawForeground(canvas, context);
+        // })
+      } else if (this.documentData.background.backgroundImageFile !== null) {
+        var img;
         img = new Image();
         img.onload = function(){
           context.drawImage(img, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
+          resolve(img);
         }
         img.src = event.target.result;
       }
-      reader.readAsDataURL(this.documentData.background.backgroundImage);
-    }
+    });
+    drawBgPromise.then(() => {
+      this.drawForeground(this.canvasElem, this.canvasContext);
+    })
   },
   drawForeground(canvas, context) {
     console.log(this.documentData.foreground);
-    // var canvas = canvasElem;
-    // var context 
-    // var foregroundImageSize;
-    // if (this.documentData.foreground.foregroundImage) {
-    //   foregroundImageSize = Object.assign({}, {
-    //     x: this.documentData.foreground.foregroundImage.width,
-    //     y: this.documentData.foreground.foregroundImage.height
-    //   });
-    // }
-    // var scale = this.documentData.foreground.foregroundImageSize || 100;
-    // scale = scale/100;
-    // foregroundImageSize.x *= resolution;
-    // foregroundImageSize.y *= resolution;
-    // context.fillStyle = this.documentData.background.backgroundColor || "black";
-    // context.fillRect(0, 0, canvas.width, canvas.height);
+    var foregroundImageSize;
+    if (this.documentData.foreground.foregroundImage) {
+      foregroundImageSize = Object.assign({}, {
+        x: this.documentData.foreground.foregroundImage.width,
+        y: this.documentData.foreground.foregroundImage.height
+      });
+      var scale = this.documentData.foreground.foregroundImageSize.scale || 100;
+      scale = scale/100;
+      foregroundImageSize.x = this.documentData.foreground.foregroundImage.width * scale;
+      foregroundImageSize.y = this.documentData.foreground.foregroundImage.height * scale;
+    }
+    
     if (this.documentData.foreground.foregroundImage && this.documentData.foreground.foregroundImage.classList && 
       this.documentData.foreground.foregroundImage.classList.contains('img-source-fg')) {
-      context.drawImage(this.documentData.foreground.foregroundImage, 0, 0, this.documentData.foreground.foregroundImage.width, this.documentData.foreground.foregroundImage.height);
+      context.drawImage(this.documentData.foreground.foregroundImage, 0, 0, foregroundImageSize.x, foregroundImageSize.y);
     }
   },
   refreshCanvas(canvas, context, resolution) {
@@ -153,7 +174,6 @@ var App = {
     resolution = resolution || 1;
     var backgroundImageSize = this.documentData.background.backgroundImageSize;
     this.drawBackground(canvas, context, resolution);
-    // create functions for each layer and pile on top of eachother
   },
 }
 

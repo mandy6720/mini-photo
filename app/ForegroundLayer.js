@@ -7,7 +7,6 @@ import qsUtil from './util';
 export default {
   panel: null,
   documentData: null,
-  imageSize: null,
 
   handleChange : function() {console.log("changed document - foreground")},
 
@@ -18,6 +17,7 @@ export default {
     this.documentData = documentData;
 
     panel.addRange('Size', 0, 300, 100, 1, this.resizeImage.bind(this));
+    document.getElementById('Size').addEventListener('mouseup', console.log('final'))
 
     var lightbox = basicLightbox.create(`
       <div class="modal">
@@ -45,7 +45,7 @@ export default {
               var sourceImg = `#${selected[0].id}-source`;
               var selectedBgImage = instance.element().querySelector(sourceImg);
               this.documentData.foreground.foregroundImage = selectedBgImage;
-              this.documentData.foreground.foregroundImageSize = 100;
+              this.documentData.foreground.foregroundImageSize.scale = 100;
               this.imageSize = 100;
               instance.close();
               this.handleChange();
@@ -75,7 +75,8 @@ export default {
     panel.addElement('Or choose from library:', lightboxButton)
   },
   resizeImage(e) {
-    this.imageSize = e;
-    console.log('resize to', e)
+    this.documentData.foreground.foregroundImageSize.scale = e;
+    console.log('resize to ', e);
+    this.handleChange();
   }
 }
