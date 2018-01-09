@@ -462,6 +462,9 @@ button {
     justify-content: space-between; }
     .modal .lightbox-container .img-sources {
       display: none; }
+    .modal .lightbox-container .img-source-fg {
+      position: absolute;
+      right: 200000px; }
     .modal .lightbox-container .image-thumb {
       box-sizing: border-box;
       width: 45%;

@@ -357,7 +357,7 @@ exports.default = {
 
     panel.addRange('Size', 0, 300, 100, 1, this.resizeImage.bind(this));
 
-    var lightbox = basicLightbox.create('\n      <div class="modal">\n        <div class="lightbox-container clearfix">\n          <div class="foreground image-thumb" id="fg1"></div>\n          <div class="foreground image-thumb" id="fg2"></div>\n          <div class="img-sources">\n            <img src="img/foreground.jpg" id="fg1-source" class="img-source-fg" />\n            <img src="img/foreground.jpg" id="fg2-source" class="img-source-fg" />\n          </div>\n        </div>\n        <a class="close-button">x</a>\n        <button class="qs_button secondary">Select Image</button>\n      </div>', {
+    var lightbox = basicLightbox.create('\n      <div class="modal">\n        <div class="lightbox-container clearfix">\n          <div class="foreground image-thumb" id="fg1"></div>\n          <div class="foreground image-thumb" id="fg2"></div>\n          <img src="img/foreground_1.png" id="fg1-source" class="img-source-fg" />\n          <img src="img/foreground_2.png" id="fg2-source" class="img-source-fg" />\n        </div>\n        <a class="close-button">x</a>\n        <button class="qs_button secondary">Select Image</button>\n      </div>', {
       beforeShow: function beforeShow(instance) {
         // if (this.documentData.background.backgroundImage.classList && 
         //   this.documentData.background.backgroundImage.classList.contains('img-source')) {
@@ -621,7 +621,13 @@ var App = {
       backgroundColor: '#000'
     },
     backgroundGraphic: {},
-    foreground: {},
+    foreground: {
+      foregroundImage: null,
+      foregroundImageSize: {
+        x: 100,
+        y: 100
+      }
+    },
     foregroundGraphic: {}
   },
 
@@ -715,9 +721,27 @@ var App = {
       reader.readAsDataURL(this.documentData.background.backgroundImage);
       context.drawImage(this.documentData.background.backgroundImage, backgroundImageSize.x, backgroundImageSize.y, backgroundImageSize.x, backgroundImageSize.y);
     }
+    this.drawForeground(canvas, context, resolution);
   },
-  drawForeground: function drawForeground(canvas, context, scale) {
-    console.log('foreground', canvas, context, scale);
+  drawForeground: function drawForeground(canvas, context) {
+    console.log('foreground', canvas, context);
+    console.log(this.documentData.foreground);
+    // var foregroundImageSize;
+    // if (this.documentData.foreground.foregroundImage) {
+    //   foregroundImageSize = Object.assign({}, {
+    //     x: this.documentData.foreground.foregroundImage.width,
+    //     y: this.documentData.foreground.foregroundImage.height
+    //   });
+    // }
+    // var scale = this.documentData.foreground.foregroundImageSize || 100;
+    // scale = scale/100;
+    // foregroundImageSize.x *= resolution;
+    // foregroundImageSize.y *= resolution;
+    // context.fillStyle = this.documentData.background.backgroundColor || "black";
+    // context.fillRect(0, 0, canvas.width, canvas.height);
+    if (this.documentData.foreground.foregroundImage && this.documentData.foreground.foregroundImage.classList && this.documentData.foreground.foregroundImage.classList.contains('img-source-fg')) {
+      context.drawImage(this.documentData.foreground.foregroundImage, 0, 0, this.documentData.foreground.foregroundImage.width, this.documentData.foreground.foregroundImage.height);
+    }
   },
   refreshCanvas: function refreshCanvas(canvas, context, resolution) {
     context = context || this.canvasContext;

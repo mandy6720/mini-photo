@@ -23,7 +23,13 @@ var App = {
     backgroundGraphic: {
 
     },
-    foreground: {},
+    foreground: {
+      foregroundImage: null,
+      foregroundImageSize: {
+        x: 100,
+        y: 100
+      }
+    },
     foregroundGraphic: {},
   },
 
@@ -118,9 +124,28 @@ var App = {
       reader.readAsDataURL(this.documentData.background.backgroundImage);  
       context.drawImage(this.documentData.background.backgroundImage, backgroundImageSize.x, backgroundImageSize.y, backgroundImageSize.x, backgroundImageSize.y);
     }
+    this.drawForeground(canvas, context, resolution);
   },
-  drawForeground(canvas, context, scale) {
-    console.log('foreground', canvas, context, scale)
+  drawForeground(canvas, context) {
+    console.log('foreground', canvas, context);
+    console.log(this.documentData.foreground);
+    // var foregroundImageSize;
+    // if (this.documentData.foreground.foregroundImage) {
+    //   foregroundImageSize = Object.assign({}, {
+    //     x: this.documentData.foreground.foregroundImage.width,
+    //     y: this.documentData.foreground.foregroundImage.height
+    //   });
+    // }
+    // var scale = this.documentData.foreground.foregroundImageSize || 100;
+    // scale = scale/100;
+    // foregroundImageSize.x *= resolution;
+    // foregroundImageSize.y *= resolution;
+    // context.fillStyle = this.documentData.background.backgroundColor || "black";
+    // context.fillRect(0, 0, canvas.width, canvas.height);
+    if (this.documentData.foreground.foregroundImage && this.documentData.foreground.foregroundImage.classList && 
+      this.documentData.foreground.foregroundImage.classList.contains('img-source-fg')) {
+      context.drawImage(this.documentData.foreground.foregroundImage, 0, 0, this.documentData.foreground.foregroundImage.width, this.documentData.foreground.foregroundImage.height);
+    }
   },
   refreshCanvas(canvas, context, resolution) {
     context = context || this.canvasContext;

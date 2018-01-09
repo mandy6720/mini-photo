@@ -24,10 +24,8 @@ export default {
         <div class="lightbox-container clearfix">
           <div class="foreground image-thumb" id="fg1"></div>
           <div class="foreground image-thumb" id="fg2"></div>
-          <div class="img-sources">
-            <img src="img/foreground.jpg" id="fg1-source" class="img-source-fg" />
-            <img src="img/foreground.jpg" id="fg2-source" class="img-source-fg" />
-          </div>
+          <img src="img/foreground_1.png" id="fg1-source" class="img-source-fg" />
+          <img src="img/foreground_2.png" id="fg2-source" class="img-source-fg" />
         </div>
         <a class="close-button">x</a>
         <button class="qs_button secondary">Select Image</button>
