@@ -629,6 +629,10 @@ var App = {
         width: null,
         height: null,
         scale: 100
+      },
+      foregroundImagePosition: {
+        x: 0,
+        y: 0
       }
     },
     foregroundGraphic: {}
@@ -702,6 +706,8 @@ var App = {
 
     this.documentData.background.backgroundImageSize.x = finalWidth;
     this.documentData.background.backgroundImageSize.y = finalHeight;
+    this.canvasContext.fillStyle = this.documentData.background.backgroundColor || "black";
+    this.canvasContext.fillRect(0, 0, canvasWidth, canvasHeight);
   },
   drawBackground: function drawBackground(canvas, context, resolution) {
     var _this = this;
@@ -711,8 +717,8 @@ var App = {
       resolution = resolution || 1;
       backgroundImageSize.x *= resolution;
       backgroundImageSize.y *= resolution;
-      context.fillStyle = _this.documentData.background.backgroundColor || "black";
-      context.fillRect(0, 0, canvas.width, canvas.height);
+      // context.fillStyle = this.documentData.background.backgroundColor || "black";
+      // context.fillRect(0, 0, canvas.width, canvas.height);
       if (_this.documentData.background.backgroundImage.classList && _this.documentData.background.backgroundImage.classList.contains('img-source')) {
         context.drawImage(_this.documentData.background.backgroundImage, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
         resolve();
