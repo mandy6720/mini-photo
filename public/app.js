@@ -660,7 +660,7 @@ var App = {
     _MainPanel2.default.updateCanvas = this.handleSelectLayer.bind(this);
 
     _BackgroundLayer2.default.handleChange = this.refreshCanvas.bind(this);
-    _ForegroundLayer2.default.handleChange = this.refreshCanvas.bind(this);
+    _ForegroundLayer2.default.handleChange = this.drawForeground.bind(this, this.canvasElem, this.canvasContext);
 
     this.refreshCanvas();
   },
@@ -711,21 +711,21 @@ var App = {
       context.drawImage(this.documentData.background.backgroundImage, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
     } else if (this.documentData.background.backgroundImage.name !== '') {
       var reader = new FileReader();
+      var img;
       reader.onload = function (event) {
-        var img = new Image();
+        img = new Image();
         img.onload = function () {
           context.drawImage(img, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
         };
         img.src = event.target.result;
       };
       reader.readAsDataURL(this.documentData.background.backgroundImage);
-      context.drawImage(this.documentData.background.backgroundImage, backgroundImageSize.x, backgroundImageSize.y, backgroundImageSize.x, backgroundImageSize.y);
     }
-    this.drawForeground(canvas, context, resolution);
   },
   drawForeground: function drawForeground(canvas, context) {
-    console.log('foreground', canvas, context);
     console.log(this.documentData.foreground);
+    // var canvas = canvasElem;
+    // var context 
     // var foregroundImageSize;
     // if (this.documentData.foreground.foregroundImage) {
     //   foregroundImageSize = Object.assign({}, {
