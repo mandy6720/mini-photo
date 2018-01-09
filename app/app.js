@@ -20,6 +20,7 @@ var App = {
       backgroundImage : new Image(),
       backgroundColor: '#000',
       backgroundImageFile: null,
+      useColorOnly: true,
     },
     backgroundGraphic: {
 
@@ -89,7 +90,6 @@ var App = {
     this.fitBackgroundToCanvas()
   },
   handleSelectLayer(info) {
-    console.log('[app.js] Changed layer to', info);
     this.selectedLayer = info;
   },
   fitBackgroundToCanvas() {
@@ -108,8 +108,16 @@ var App = {
 
     this.documentData.background.backgroundImageSize.x = finalWidth;
     this.documentData.background.backgroundImageSize.y = finalHeight;
+
     this.canvasContext.fillStyle = this.documentData.background.backgroundColor || "black";
     this.canvasContext.fillRect(0, 0, canvasWidth, canvasHeight);
+  },
+  changeColor() {
+    this.documentData.background.backgroundImage = new Image();
+    this.documentData.background.backgroundImageFile = null;
+    this.canvasContext.fillStyle = this.documentData.background.backgroundColor || "black";
+    this.canvasContext.fillRect(0, 0, this.documentData.workspaceSize.x, this.documentData.workspaceSize.y);
+    this.refreshCanvas(this.canvasElem, this.canvasContext);
   },
   drawBackground(canvas, context, resolution) {
     var drawBgPromise = new Promise((resolve, reject) => {
@@ -117,9 +125,11 @@ var App = {
       resolution = resolution || 1;
       backgroundImageSize.x *= resolution;
       backgroundImageSize.y *= resolution;
-      // context.fillStyle = this.documentData.background.backgroundColor || "black";
-      // context.fillRect(0, 0, canvas.width, canvas.height);
-      if (this.documentData.background.backgroundImage.classList && this.documentData.background.backgroundImage.classList.contains('img-source')) {
+      if (this.documentData.background.useColorOnly === true) {
+        context.fillStyle = this.documentData.background.backgroundColor || "black";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        resolve();
+      } else if (this.documentData.background.backgroundImage.classList && this.documentData.background.backgroundImage.classList.contains('img-source')) {
         context.drawImage(this.documentData.background.backgroundImage, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
         resolve();
       } else if (this.documentData.background.backgroundImage.name !== '') {
@@ -149,6 +159,8 @@ var App = {
           resolve(img);
         }
         img.src = event.target.result;
+      } else {
+        console.log(this.documentData.background.backgroundImage)
       }
     });
     drawBgPromise.then(() => {

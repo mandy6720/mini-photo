@@ -235,6 +235,7 @@ exports.default = {
             var sourceImg = '#' + selected[0].id + '-source';
             var selectedBgImage = instance.element().querySelector(sourceImg);
             _this.documentData.background.backgroundImage = selectedBgImage;
+            _this.documentData.background.useColorOnly = false;
             instance.close();
             _this.handleChange();
           }
@@ -278,6 +279,7 @@ exports.default = {
     // this.documentData.background.backgroundImage.src = fileURL; 
     console.log(this.documentData.background, fileObj);
     this.documentData.background.backgroundImage = fileObj;
+    this.documentData.background.useColorOnly = false;
     this.handleChange();
   },
   onSelectSwatchGroup: function onSelectSwatchGroup(info) {
@@ -305,8 +307,8 @@ exports.default = {
     _util2.default.addSwatchHighlight(elem);
     this.selectedSwatchElem = elem;
     this.documentData.background.backgroundColor = swatch.color;
+    this.documentData.background.useColorOnly = true;
     this.handleChange();
-    console.log(this.documentData, swatch);
   }
 };
 });
@@ -620,7 +622,8 @@ var App = {
       backgroundImageSize: { x: 0, y: 0 },
       backgroundImage: new Image(),
       backgroundColor: '#000',
-      backgroundImageFile: null
+      backgroundImageFile: null,
+      useColorOnly: true
     },
     backgroundGraphic: {},
     foreground: {
@@ -687,7 +690,6 @@ var App = {
     this.fitBackgroundToCanvas();
   },
   handleSelectLayer: function handleSelectLayer(info) {
-    console.log('[app.js] Changed layer to', info);
     this.selectedLayer = info;
   },
   fitBackgroundToCanvas: function fitBackgroundToCanvas() {
@@ -706,8 +708,16 @@ var App = {
 
     this.documentData.background.backgroundImageSize.x = finalWidth;
     this.documentData.background.backgroundImageSize.y = finalHeight;
+
     this.canvasContext.fillStyle = this.documentData.background.backgroundColor || "black";
     this.canvasContext.fillRect(0, 0, canvasWidth, canvasHeight);
+  },
+  changeColor: function changeColor() {
+    this.documentData.background.backgroundImage = new Image();
+    this.documentData.background.backgroundImageFile = null;
+    this.canvasContext.fillStyle = this.documentData.background.backgroundColor || "black";
+    this.canvasContext.fillRect(0, 0, this.documentData.workspaceSize.x, this.documentData.workspaceSize.y);
+    this.refreshCanvas(this.canvasElem, this.canvasContext);
   },
   drawBackground: function drawBackground(canvas, context, resolution) {
     var _this = this;
@@ -717,9 +727,11 @@ var App = {
       resolution = resolution || 1;
       backgroundImageSize.x *= resolution;
       backgroundImageSize.y *= resolution;
-      // context.fillStyle = this.documentData.background.backgroundColor || "black";
-      // context.fillRect(0, 0, canvas.width, canvas.height);
-      if (_this.documentData.background.backgroundImage.classList && _this.documentData.background.backgroundImage.classList.contains('img-source')) {
+      if (_this.documentData.background.useColorOnly === true) {
+        context.fillStyle = _this.documentData.background.backgroundColor || "black";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        resolve();
+      } else if (_this.documentData.background.backgroundImage.classList && _this.documentData.background.backgroundImage.classList.contains('img-source')) {
         context.drawImage(_this.documentData.background.backgroundImage, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
         resolve();
       } else if (_this.documentData.background.backgroundImage.name !== '') {
@@ -749,6 +761,8 @@ var App = {
           resolve(img);
         };
         img.src = event.target.result;
+      } else {
+        console.log(_this.documentData.background.backgroundImage);
       }
     });
     drawBgPromise.then(function () {

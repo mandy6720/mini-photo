@@ -73,6 +73,7 @@ export default {
               var sourceImg = `#${selected[0].id}-source`;
               var selectedBgImage = instance.element().querySelector(sourceImg);
               this.documentData.background.backgroundImage = selectedBgImage;
+              this.documentData.background.useColorOnly = false;
               instance.close();
               this.handleChange();
             }
@@ -119,6 +120,7 @@ export default {
     // this.documentData.background.backgroundImage.src = fileURL; 
     console.log(this.documentData.background, fileObj);
     this.documentData.background.backgroundImage = fileObj;
+    this.documentData.background.useColorOnly = false;
     this.handleChange();
   },
   onSelectSwatchGroup(info) {
@@ -146,7 +148,7 @@ export default {
 		qsUtil.addSwatchHighlight(elem);
     this.selectedSwatchElem = elem;
     this.documentData.background.backgroundColor = swatch.color;
+    this.documentData.background.useColorOnly = true;
     this.handleChange();
-    console.log(this.documentData, swatch)
   },
 }
