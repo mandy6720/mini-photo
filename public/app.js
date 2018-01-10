@@ -629,7 +629,13 @@ var App = {
       backgroundImageFile: null,
       useColorOnly: true
     },
-    backgroundGraphic: {},
+    backgroundGraphic: {
+      drawBgGraphic: false,
+      backgroundGraphicImageSize: { x: 0, y: 0, scale: 100 },
+      backgroundGraphicImage: new Image(),
+      backgroundGraphicOpacity: 1,
+      backgroundGraphicRotation: 0
+    },
     foreground: {
       foregroundImage: null,
       foregroundImageSize: {
@@ -643,7 +649,13 @@ var App = {
       },
       foregroundImageFile: null
     },
-    foregroundGraphic: {}
+    foregroundGraphic: {
+      drawFgGraphic: false,
+      foregroundGraphicImageSize: { x: 0, y: 0, scale: 100 },
+      foregroundGraphicImage: new Image(),
+      foregroundGraphicOpacity: 1,
+      foregroundGraphicRotation: 0
+    }
   },
 
   // other state
@@ -780,7 +792,13 @@ var App = {
     });
     drawBgPromise.then(function () {
       console.log('done drawing bg');
-      _this.drawForeground(_this.canvasElem, _this.canvasContext);
+      if (_this.documentData.backgroundGraphic.drawBgGraphic === true) {
+        console.log('drawBackgroundGraphic');
+        _this.drawBackgroundGraphic(_this.canvasElem, _this.canvasContext);
+      } else {
+        console.log('drawForeground');
+        _this.drawForeground(_this.canvasElem, _this.canvasContext);
+      }
     });
   },
   drawForeground: function drawForeground(canvas, context) {
@@ -837,6 +855,10 @@ var App = {
     });
     drawFgPromise.then(function (img) {
       console.log('done drawing fg', _this2.documentData.foreground);
+      if (_this2.documentData.backgroundGraphic.drawFgGraphic === true) {
+        console.log('drawBackgroundGraphic');
+        _this2.drawForegroundGraphic(_this2.canvasElem, _this2.canvasContext);
+      }
     });
   },
   refreshCanvas: function refreshCanvas(canvas, context, resolution) {
@@ -845,6 +867,12 @@ var App = {
     resolution = resolution || 1;
     var backgroundImageSize = this.documentData.background.backgroundImageSize;
     this.drawBackground(canvas, context, resolution);
+  },
+  drawBackgroundGraphic: function drawBackgroundGraphic(canvas, context) {
+    console.log('drawing bg graphic', this.documentData.backgroundGraphic);
+  },
+  drawForegroundGraphic: function drawForegroundGraphic(canvas, context) {
+    console.log('drawing fg graphic', this.documentData.foregroundGraphic);
   },
   handleMouseDown: function handleMouseDown(e) {
     this.documentData.canMouseX = event.clientX;
