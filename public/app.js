@@ -491,6 +491,15 @@ exports.default = {
       default:
         break;
     }
+    // This is the fastest location to rebuild the download link last
+    this.addDownloadButton(panel);
+  },
+  addDownloadButton: function addDownloadButton(panel) {
+    var _this = this;
+
+    panel.addButton('Download', function () {
+      _this.startDownload();
+    });
   },
   updatePanel: function updatePanel(newPanelType) {
 
@@ -525,6 +534,10 @@ var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
+var _downloadjs = require('downloadjs');
+
+var _downloadjs2 = _interopRequireDefault(_downloadjs);
+
 var _MainPanel = require('./MainPanel');
 
 var _MainPanel2 = _interopRequireDefault(_MainPanel);
@@ -541,6 +554,7 @@ var App = {
   canvasElem: null,
   hiResCanvasElem: null,
   svgElem: null,
+  fileBaseName: 'download_L2_',
 
   // document data
   documentData: {
@@ -582,6 +596,7 @@ var App = {
     _MainPanel2.default.documentData = this.documentData;
     _MainPanel2.default.selectedLayer = this.selectedLayer;
     _MainPanel2.default.updateCanvas = this.handleSelectLayer.bind(this);
+    _MainPanel2.default.startDownload = this.startDownload.bind(this);
 
     _BackgroundLayer2.default.handleChange = this.refreshCanvas.bind(this);
 
@@ -653,6 +668,13 @@ var App = {
     var backgroundImageSize = this.documentData.background.backgroundImageSize;
     this.drawBackground(canvas, context, resolution);
     // create functions for each layer and pile on top of eachother
+  },
+  startDownload: function startDownload() {
+    // test downloadjs
+    // download("hello world", "dlText.txt", "text/plain");
+
+
+    (0, _downloadjs2.default)(this.canvasElem.toDataURL('image/png'), '' + this.fileBaseName + Date.now() + '.png', 'image/png');
   }
 };
 
