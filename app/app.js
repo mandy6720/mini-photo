@@ -174,27 +174,50 @@ var App = {
       }
     });
     drawBgPromise.then(() => {
+      console.log('done drawing bg');
       this.drawForeground(this.canvasElem, this.canvasContext);
     })
   },
   drawForeground(canvas, context) {
-    console.log(this.documentData.foreground);
-    var foregroundImageSize;
-    if (this.documentData.foreground.foregroundImage) {
-      foregroundImageSize = Object.assign({}, {
-        x: this.documentData.foreground.foregroundImage.width,
-        y: this.documentData.foreground.foregroundImage.height
-      });
-      var scale = this.documentData.foreground.foregroundImageSize.scale || 100;
-      scale = scale/100;
-      foregroundImageSize.x = this.documentData.foreground.foregroundImage.width * scale;
-      foregroundImageSize.y = this.documentData.foreground.foregroundImage.height * scale;
-    }
-    
-    if (this.documentData.foreground.foregroundImage && this.documentData.foreground.foregroundImage.classList && 
-      this.documentData.foreground.foregroundImage.classList.contains('img-source-fg')) {
-      context.drawImage(this.documentData.foreground.foregroundImage, this.documentData.foreground.foregroundImagePosition.x, this.documentData.foreground.foregroundImagePosition.y, foregroundImageSize.x, foregroundImageSize.y);
-    }
+    var drawFgPromise = new Promise((resolve, reject) => {
+      var foregroundImageSize;
+      if (this.documentData.foreground.foregroundImage) {
+        foregroundImageSize = Object.assign({}, {
+          x: this.documentData.foreground.foregroundImage.width,
+          y: this.documentData.foreground.foregroundImage.height
+        });
+        var scale = this.documentData.foreground.foregroundImageSize.scale || 100;
+        scale = scale/100;
+        foregroundImageSize.x = this.documentData.foreground.foregroundImage.width * scale;
+        foregroundImageSize.y = this.documentData.foreground.foregroundImage.height * scale;
+      }
+      
+      if (this.documentData.foreground.foregroundImage && this.documentData.foreground.foregroundImage.classList && 
+        this.documentData.foreground.foregroundImage.classList.contains('img-source-fg')) {
+        context.drawImage(this.documentData.foreground.foregroundImage, this.documentData.foreground.foregroundImagePosition.x, this.documentData.foreground.foregroundImagePosition.y, foregroundImageSize.x, foregroundImageSize.y);
+        resolve();
+      } else if (this.documentData.foreground.foregroundImage && this.documentData.foreground.foregroundImage.name !== '') {
+        console.log('file upload');
+        var reader = new FileReader();
+        var img;
+        var docData = this.documentData;
+        reader.onload = function(event){
+          docData.foreground.foregroundImageFile = event.target.result;
+          img = new Image();
+          img.onload = function(){
+            foregroundImageSize.x = this.width;
+            foregroundImageSize.y = this.height;
+            context.drawImage(img, docData.foreground.foregroundImagePosition.x, docData.foreground.foregroundImagePosition.y, foregroundImageSize.x, foregroundImageSize.y);
+            resolve(img);
+          }
+          img.src = event.target.result;
+        }
+        reader.readAsDataURL(this.documentData.foreground.foregroundImage);
+      }
+    });
+    drawFgPromise.then((img) => {
+      console.log('done drawing fg');
+    })
   },
   refreshCanvas(canvas, context, resolution) {
     context = context || this.canvasContext;
@@ -215,13 +238,7 @@ var App = {
   },
   handleMouseMove(e) {
     if (this.isDragging) {
-      // get selected layer
-      console.log(this.selectedLayer)
-      // make transformations
-      console.log(e.clientX, e.clientY, e);
-      this.documentData[this.selectedLayer]
-      // re-draw canvas
-
+      // find selectedLayer and act accordingly
       switch (this.selectedLayer) {
         case 'foreground':
           this.documentData.foreground.foregroundImagePosition.x = e.clientX;

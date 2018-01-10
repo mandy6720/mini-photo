@@ -17,7 +17,9 @@ export default {
     this.documentData = documentData;
 
     panel.addRange('Size', 0, 300, 100, 1, this.resizeImage.bind(this));
-    document.getElementById('Size').addEventListener('mouseup', console.log('final'))
+    document.getElementById('Size').addEventListener('mouseup', console.log('final'));
+
+    panel.addFileChooser('Foreground Image', '', 'image/*', this.onChooseImage.bind(this));
 
     var lightbox = basicLightbox.create(`
       <div class="modal">
@@ -35,7 +37,6 @@ export default {
           //   this.documentData.background.backgroundImage.classList.contains('img-source')) {
           //   instance.element().querySelector(`#${this.documentData.background.backgroundImage.id}`).classList.add('selected');
           // }
-          console.log(this.documentData)
           instance.element().querySelector('a').onclick = instance.close;
           instance.element().querySelector('button').onclick = () => {
             // set selected if image is selected
@@ -77,6 +78,11 @@ export default {
   resizeImage(e) {
     this.documentData.foreground.foregroundImageSize.scale = e;
     console.log('resize to ', e);
+    this.handleChange();
+  },
+  onChooseImage(fileObj) {
+    console.log(this.documentData.foreground, fileObj);
+    this.documentData.foreground.foregroundImage = fileObj;
     this.handleChange();
   }
 }
