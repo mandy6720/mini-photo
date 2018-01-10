@@ -267,8 +267,12 @@ var App = {
     this.drawBackground(canvas, context, resolution);
   },
   drawBackgroundGraphic(canvas, context) {
-    console.log('drawing bg graphic', this.documentData.backgroundGraphic);
-    context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, this.documentData.backgroundGraphic.backgroundGraphicImageSize.x, this.documentData.backgroundGraphic.backgroundGraphicImageSize.y);
+    console.log('[BGG]', this.documentData.backgroundGraphic.backgroundGraphicImageSize)
+    var scale = this.documentData.backgroundGraphic.backgroundGraphicImageSize.scale / 100;
+    var backgroundGraphicWidth = this.documentData.backgroundGraphic.backgroundGraphicImageSize.x * scale;
+    var backgroundGraphicHeight = this.documentData.backgroundGraphic.backgroundGraphicImageSize.y * scale;
+    console.log(this.documentData.backgroundGraphic.backgroundGraphicImageSize)
+    context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, backgroundGraphicWidth, backgroundGraphicHeight);
     this.drawForeground(canvas, context);
   },
   drawForegroundGraphic(canvas, context) {

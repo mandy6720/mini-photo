@@ -61,7 +61,8 @@ export default {
                 this.documentData.backgroundGraphic.drawBgGraphic = true;
                 this.documentData.backgroundGraphic.backgroundGraphicImageSize = {
                   x: this.documentData.backgroundGraphic.backgroundGraphicImage.width,
-                  y: this.documentData.backgroundGraphic.backgroundGraphicImage.height
+                  y: this.documentData.backgroundGraphic.backgroundGraphicImage.height,
+                  scale: 100
                 };
                 this.handleChange();
                 console.log(this.selectedLayer, 'choose graphic', this.documentData.backgroundGraphic)
@@ -71,7 +72,8 @@ export default {
                 this.documentData.foregroundGraphic.drawFgGraphic = true;
                 this.documentData.foregroundGraphic.foregroundGraphicImageSize = {
                   x: this.documentData.foregroundGraphic.foregroundGraphicImage.width,
-                  y: this.documentData.foregroundGraphic.foregroundGraphicImage.height
+                  y: this.documentData.foregroundGraphic.foregroundGraphicImage.height,
+                  scale: 100
                 };
                 console.log(this.selectedLayer, 'choose graphic', this.documentData.foregroundGraphic)
               }
