@@ -1020,11 +1020,16 @@ var App = {
       context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, backgroundGraphicWidth, backgroundGraphicHeight);
       context.restore();
     } else if (this.documentData.backgroundGraphic.backgroundGraphicRotation !== 0) {
-      console.log(this.documentData.backgroundGraphic.backgroundGraphicRotation);
+
+      var width = this.documentData.backgroundGraphic.backgroundGraphicImageSize.x;
+      var height = this.documentData.backgroundGraphic.backgroundGraphicImageSize.y;
+      console.log('[LOO0K]', width, height);
       context.save(); // save current state
-      context.translate(this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y);
-      context.rotate(this.convertToRadians(this.documentData.backgroundGraphic.backgroundGraphicRotation)); // rotate
-      context.translate(-this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, -this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y);
+
+      context.translate(width / 2, height / 2);
+      context.rotate(this.convertToRadians(this.documentData.backgroundGraphic.backgroundGraphicRotation));
+      context.translate(width / -2, height / -2);
+
       context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, backgroundGraphicWidth, backgroundGraphicHeight);
       context.restore();
     } else {
