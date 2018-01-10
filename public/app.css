@@ -489,6 +489,10 @@ button {
         background-image: url("img/foreground_1.png"); }
       .modal .lightbox-container .image-thumb#fg2 {
         background-image: url("img/foreground_2.png"); }
+      .modal .lightbox-container .image-thumb#graphic1 {
+        background-image: url("img/graphic_1.png"); }
+      .modal .lightbox-container .image-thumb#graphic2 {
+        background-image: url("img/graphic_2.png"); }
   .modal .clearfix {
     overflow: auto; }
 

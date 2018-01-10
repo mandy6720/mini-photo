@@ -4,6 +4,7 @@ import _ from 'lodash';
 import MainPanel from './MainPanel';
 import Background from './BackgroundLayer';
 import Foreground from './ForegroundLayer';
+import Graphic from './GraphicLayer';
 
 var App = {
   // elems
@@ -27,6 +28,7 @@ var App = {
     backgroundGraphic: {
       drawBgGraphic: false,
       backgroundGraphicImageSize : {x: 0, y: 0, scale: 100},
+      backgroundGraphicImagePosition : {x: 0, y: 0},
       backgroundGraphicImage : new Image(),
       backgroundGraphicOpacity: 1,
       backgroundGraphicRotation: 0
@@ -47,6 +49,7 @@ var App = {
     foregroundGraphic: {
       drawFgGraphic: false,
       foregroundGraphicImageSize : {x: 0, y: 0, scale: 100},
+      foregroundGraphicImagePosition : {x: 0, y: 0},
       foregroundGraphicImage : new Image(),
       foregroundGraphicOpacity: 1,
       foregroundGraphicRotation: 0
@@ -91,6 +94,7 @@ var App = {
 
     Background.handleChange = this.refreshCanvas.bind(this);
     Foreground.handleChange = this.refreshCanvas.bind(this, this.canvasElem, this.canvasContext);
+    Graphic.handleChange = this.refreshCanvas.bind(this);
 
     this.refreshCanvas()
   },
@@ -248,7 +252,7 @@ var App = {
     });
     drawFgPromise.then((img) => {
       console.log('done drawing fg', this.documentData.foreground);
-      if (this.documentData.backgroundGraphic.drawFgGraphic === true) {
+      if (this.documentData.foregroundGraphic.drawFgGraphic === true) {
         console.log('drawBackgroundGraphic');
         this.drawForegroundGraphic(this.canvasElem, this.canvasContext);
       }
@@ -263,9 +267,12 @@ var App = {
   },
   drawBackgroundGraphic(canvas, context) {
     console.log('drawing bg graphic', this.documentData.backgroundGraphic);
+    context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, 0, 0, this.documentData.backgroundGraphic.backgroundGraphicImageSize.x, this.documentData.backgroundGraphic.backgroundGraphicImageSize.y);
+    this.drawForeground(canvas, context);
   },
   drawForegroundGraphic(canvas, context) {
     console.log('drawing fg graphic', this.documentData.foregroundGraphic);
+    context.drawImage(this.documentData.foregroundGraphic.foregroundGraphicImage, 0, 0, this.documentData.foregroundGraphic.foregroundGraphicImageSize.x, this.documentData.foregroundGraphic.foregroundGraphicImageSize.y);
   },
   handleMouseDown(e) {
     this.documentData.canMouseX = event.clientX;
@@ -285,6 +292,13 @@ var App = {
           this.documentData.foreground.foregroundImagePosition.x = e.clientX;
           this.documentData.foreground.foregroundImagePosition.y = e.clientY;
           this.refreshCanvas(this.canvasElem, this.canvasContext);
+          break;
+        case 'bg-graphic':
+          // this.documentData.backgroundGraphic.backgroundGraphicImage.x = e.clientX;
+          // this.documentData.foreground.foregroundImagePosition.y = e.clientY;
+          // this.refreshCanvas(this.canvasElem, this.canvasContext);
+          break;
+        case 'fg-graphic':
           break;
         default:
           break;
