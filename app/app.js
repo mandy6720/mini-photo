@@ -1,5 +1,6 @@
 import QuickSettings from 'quicksettings';
 import _ from 'lodash';
+import download from 'downloadjs';
 
 import MainPanel from './MainPanel';
 import Background from './BackgroundLayer';
@@ -10,6 +11,7 @@ var App = {
 	canvasElem : null,
   hiResCanvasElem : null,
   svgElem : null,
+	fileBaseName : 'download_L2_',
 
   // document data
 	documentData : {
@@ -53,6 +55,7 @@ var App = {
     MainPanel.documentData = this.documentData;
     MainPanel.selectedLayer = this.selectedLayer;
     MainPanel.updateCanvas = this.handleSelectLayer.bind(this);
+		MainPanel.startDownload = this.startDownload.bind(this);
 
     Background.handleChange = this.refreshCanvas.bind(this);
 
@@ -126,6 +129,13 @@ var App = {
     this.drawBackground(canvas, context, resolution);
     // create functions for each layer and pile on top of eachother
   },
+  startDownload() {
+    // test downloadjs
+    // download("hello world", "dlText.txt", "text/plain");
+		
+
+    download(this.canvasElem.toDataURL('image/png'),`${this.fileBaseName}${Date.now()}.png`,'image/png');
+  }
 }
 
 export default App;
