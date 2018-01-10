@@ -56,6 +56,7 @@ export default {
               var sourceImg = `#${selected[0].id}-source`;
               var selectedGraphicImage = instance.element().querySelector(sourceImg);
               if (this.selectedLayer === 'bg-graphic') {
+                this.documentData.backgroundGraphic.backgroundGraphicImagePosition = {x: 0, y: 0};
                 this.documentData.backgroundGraphic.backgroundGraphicImage = selectedGraphicImage;
                 this.documentData.backgroundGraphic.drawBgGraphic = true;
                 this.documentData.backgroundGraphic.backgroundGraphicImageSize = {
@@ -65,6 +66,7 @@ export default {
                 this.handleChange();
                 console.log(this.selectedLayer, 'choose graphic', this.documentData.backgroundGraphic)
               } else if (this.selectedLayer === 'fg-graphic') {
+                this.documentData.foregroundGraphic.foregroundGraphicImagePosition = {x: 0, y: 0};
                 this.documentData.foregroundGraphic.foregroundGraphicImage = selectedGraphicImage;
                 this.documentData.foregroundGraphic.drawFgGraphic = true;
                 this.documentData.foregroundGraphic.foregroundGraphicImageSize = {

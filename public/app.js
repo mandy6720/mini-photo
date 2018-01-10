@@ -482,6 +482,7 @@ exports.default = {
             var sourceImg = '#' + selected[0].id + '-source';
             var selectedGraphicImage = instance.element().querySelector(sourceImg);
             if (_this.selectedLayer === 'bg-graphic') {
+              _this.documentData.backgroundGraphic.backgroundGraphicImagePosition = { x: 0, y: 0 };
               _this.documentData.backgroundGraphic.backgroundGraphicImage = selectedGraphicImage;
               _this.documentData.backgroundGraphic.drawBgGraphic = true;
               _this.documentData.backgroundGraphic.backgroundGraphicImageSize = {
@@ -491,6 +492,7 @@ exports.default = {
               _this.handleChange();
               console.log(_this.selectedLayer, 'choose graphic', _this.documentData.backgroundGraphic);
             } else if (_this.selectedLayer === 'fg-graphic') {
+              _this.documentData.foregroundGraphic.foregroundGraphicImagePosition = { x: 0, y: 0 };
               _this.documentData.foregroundGraphic.foregroundGraphicImage = selectedGraphicImage;
               _this.documentData.foregroundGraphic.drawFgGraphic = true;
               _this.documentData.foregroundGraphic.foregroundGraphicImageSize = {
@@ -795,7 +797,7 @@ var App = {
     this.canvasElem.addEventListener('mousedown', this.handleMouseDown.bind(this));
     this.canvasElem.addEventListener('mouseup', this.handleMouseUp.bind(this));
     this.canvasElem.addEventListener('mousemove', this.handleMouseMove.bind(this));
-    // this.canvasElem.addEventListener('mouseout', (e) => {console.log(e)});
+    this.canvasElem.addEventListener('mouseout', this.handleMouseOut.bind(this));
 
     // inset panel here
     _MainPanel2.default.init(rootElem, this.documentData);
@@ -962,6 +964,7 @@ var App = {
         };
         reader.readAsDataURL(_this2.documentData.foreground.foregroundImage);
       }
+      resolve();
     });
     drawFgPromise.then(function (img) {
       console.log('done drawing fg', _this2.documentData.foreground);
@@ -980,7 +983,7 @@ var App = {
   },
   drawBackgroundGraphic: function drawBackgroundGraphic(canvas, context) {
     console.log('drawing bg graphic', this.documentData.backgroundGraphic);
-    context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, 0, 0, this.documentData.backgroundGraphic.backgroundGraphicImageSize.x, this.documentData.backgroundGraphic.backgroundGraphicImageSize.y);
+    context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, this.documentData.backgroundGraphic.backgroundGraphicImageSize.x, this.documentData.backgroundGraphic.backgroundGraphicImageSize.y);
     this.drawForeground(canvas, context);
   },
   drawForegroundGraphic: function drawForegroundGraphic(canvas, context) {
@@ -1007,9 +1010,9 @@ var App = {
           this.refreshCanvas(this.canvasElem, this.canvasContext);
           break;
         case 'bg-graphic':
-          // this.documentData.backgroundGraphic.backgroundGraphicImage.x = e.clientX;
-          // this.documentData.foreground.foregroundImagePosition.y = e.clientY;
-          // this.refreshCanvas(this.canvasElem, this.canvasContext);
+          this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x = e.clientX;
+          this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y = e.clientY;
+          this.refreshCanvas(this.canvasElem, this.canvasContext);
           break;
         case 'fg-graphic':
           break;
@@ -1019,7 +1022,7 @@ var App = {
     }
   },
   handleMouseOut: function handleMouseOut(e) {
-    console.log('mouse out', e, this.selectedLayer);
+    this.isDragging = false;
   }
 };
 
