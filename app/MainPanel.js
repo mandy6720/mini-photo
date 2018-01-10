@@ -100,6 +100,13 @@ export default {
       default:
         break;
     }
+    // This is the fastest location to rebuild the download link last
+    this.addDownloadButton(panel);
+  },
+  addDownloadButton(panel) {
+    panel.addButton('Download', () => {
+      this.startDownload();
+    });
   },
   updatePanel(newPanelType) {
     var panelInputs = document.getElementsByClassName('qs_container');

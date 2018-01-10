@@ -1,5 +1,6 @@
 import QuickSettings from 'quicksettings';
 import _ from 'lodash';
+import download from 'downloadjs';
 
 import MainPanel from './MainPanel';
 import Background from './BackgroundLayer';
@@ -12,6 +13,7 @@ var App = {
 	canvasElem : null,
   hiResCanvasElem : null,
   svgElem : null,
+	fileBaseName : 'download_L2_',
 
   // document data
 	documentData : {
@@ -91,6 +93,7 @@ var App = {
     MainPanel.documentData = this.documentData;
     MainPanel.selectedLayer = this.selectedLayer;
     MainPanel.updateCanvas = this.handleSelectLayer.bind(this);
+		MainPanel.startDownload = this.startDownload.bind(this);
 
     Background.handleChange = this.refreshCanvas.bind(this);
     Foreground.handleChange = this.refreshCanvas.bind(this, this.canvasElem, this.canvasContext);
@@ -270,16 +273,29 @@ var App = {
     var scale = this.documentData.backgroundGraphic.backgroundGraphicImageSize.scale / 100;
     var backgroundGraphicWidth = this.documentData.backgroundGraphic.backgroundGraphicImageSize.x * scale;
     var backgroundGraphicHeight = this.documentData.backgroundGraphic.backgroundGraphicImageSize.y * scale;
+    if (this.documentData.backgroundGraphic.backgroundGraphicOpacity !== 1) {
+      context.save();
+      context.globalAlpha = this.documentData.backgroundGraphic.backgroundGraphicOpacity;
+      context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, backgroundGraphicWidth, backgroundGraphicHeight);
+      context.restore();
+    } else {
+      context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, backgroundGraphicWidth, backgroundGraphicHeight);
+    }
     console.log(this.documentData.backgroundGraphic.backgroundGraphicImageSize)
-    context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, backgroundGraphicWidth, backgroundGraphicHeight);
     this.drawForeground(canvas, context);
   },
   drawForegroundGraphic(canvas, context) {
     var scale = this.documentData.foregroundGraphic.foregroundGraphicImageSize.scale / 100;
     var foregroundGraphicWidth = this.documentData.foregroundGraphic.foregroundGraphicImageSize.x * scale;
     var foregroundGraphicHeight = this.documentData.foregroundGraphic.foregroundGraphicImageSize.y * scale;
-    console.log('drawing fg graphic', this.documentData.foregroundGraphic);
-    context.drawImage(this.documentData.foregroundGraphic.foregroundGraphicImage, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y, foregroundGraphicWidth, foregroundGraphicHeight);
+    if (this.documentData.foregroundGraphic.foregroundGraphicOpacity !== 1) {
+      context.save();
+      context.globalAlpha = this.documentData.foregroundGraphic.foregroundGraphicOpacity;
+      context.drawImage(this.documentData.foregroundGraphic.foregroundGraphicImage, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y, foregroundGraphicWidth, foregroundGraphicHeight);
+      context.restore();
+    } else {
+      context.drawImage(this.documentData.foregroundGraphic.foregroundGraphicImage, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y, foregroundGraphicWidth, foregroundGraphicHeight);
+    }
   },
   handleMouseDown(e) {
     this.documentData.canMouseX = event.clientX;
@@ -318,6 +334,13 @@ var App = {
   handleMouseOut(e) {
     this.isDragging = false;
   },
+  startDownload() {
+    // test downloadjs
+    // download("hello world", "dlText.txt", "text/plain");
+		
+
+    download(this.canvasElem.toDataURL('image/png'),`${this.fileBaseName}${Date.now()}.png`,'image/png');
+  }
 }
 
 export default App;

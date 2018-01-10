@@ -18,8 +18,8 @@ export default {
     this.selectedLayer = selectedLayer;
     
     panel.addRange('Scale', 0, 200, 100, 1, this.resizeImage.bind(this));
-    panel.addRange('Rotation', 0, 360, 0, 15, this.resizeImage.bind(this));
-    panel.addRange('Opacity', 0, 100, 100, 1, this.changeImageOpacity.bind(this));
+    panel.addRange('Rotation', 0, 360, 0, 15, this.changeImageRotation.bind(this));
+    panel.addRange('Opacity', 0, 100, (this.selectedLayer === 'bg-graphic' ? this.documentData.backgroundGraphic.backgroundGraphicOpacity * 100 : this.documentData.foregroundGraphic.foregroundGraphicOpacity * 100), 1, this.changeImageOpacity.bind(this));
 
     var lightbox = basicLightbox.create(`
       <div class="modal">
@@ -116,7 +116,12 @@ export default {
     console.log(this.selectedLayer, '- changeImageRotation to', e);
   },
   changeImageOpacity(e) {
-    console.log(this.selectedLayer, '- changeImageOpacity to', e);
+    if (this.selectedLayer === 'bg-graphic') {
+      this.documentData.backgroundGraphic.backgroundGraphicOpacity = e/100;
+    } else if (this.selectedLayer === 'fg-graphic') {
+      this.documentData.foregroundGraphic.foregroundGraphicOpacity = e/100;
+    }
+    this.handleChange();
   },
   onChooseImage() {
     console.log(this.selectedLayer, 'choose graphic', this.documentData)
