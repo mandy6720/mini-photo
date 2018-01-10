@@ -19,7 +19,7 @@ export default {
     
     panel.addRange('Scale', 0, 200, 100, 1, this.resizeImage.bind(this));
     panel.addRange('Rotation', 0, 360, 0, 15, this.resizeImage.bind(this));
-    panel.addRange('Opacity', 0, 1, 1, .01, this.changeImageOpacity.bind(this));
+    panel.addRange('Opacity', 0, 100, 100, 1, this.changeImageOpacity.bind(this));
 
     var lightbox = basicLightbox.create(`
       <div class="modal">
@@ -65,7 +65,6 @@ export default {
                   scale: 100
                 };
                 this.handleChange();
-                console.log(this.selectedLayer, 'choose graphic', this.documentData.backgroundGraphic)
               } else if (this.selectedLayer === 'fg-graphic') {
                 this.documentData.foregroundGraphic.foregroundGraphicImagePosition = {x: 0, y: 0};
                 this.documentData.foregroundGraphic.foregroundGraphicImage = selectedGraphicImage;
@@ -75,7 +74,6 @@ export default {
                   y: this.documentData.foregroundGraphic.foregroundGraphicImage.height,
                   scale: 100
                 };
-                console.log(this.selectedLayer, 'choose graphic', this.documentData.foregroundGraphic)
               }
               
               instance.close();
@@ -107,6 +105,12 @@ export default {
   },
   resizeImage(e) {
     console.log(this.selectedLayer, '- resize to', e);
+    if (this.selectedLayer === 'bg-graphic') {
+      this.documentData.backgroundGraphic.backgroundGraphicImageSize.scale = e;
+    } else if (this.selectedLayer === 'fg-graphic') {
+      this.documentData.foregroundGraphic.foregroundGraphicImageSize.scale = e;
+    }
+    this.handleChange();
   },
   changeImageRotation(e) {
     console.log(this.selectedLayer, '- changeImageRotation to', e);

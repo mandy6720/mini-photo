@@ -147,7 +147,7 @@ button {
   padding: 0px;
   margin: 0px;
   background-color: transparent;
-  background: url("media/slider-bg.png");
+  background: url("img/slider-bg.png");
   background-size: calc(100% - 15px) 1px;
   background-position: center;
   background-repeat: no-repeat;

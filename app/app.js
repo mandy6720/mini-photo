@@ -267,7 +267,6 @@ var App = {
     this.drawBackground(canvas, context, resolution);
   },
   drawBackgroundGraphic(canvas, context) {
-    console.log('[BGG]', this.documentData.backgroundGraphic.backgroundGraphicImageSize)
     var scale = this.documentData.backgroundGraphic.backgroundGraphicImageSize.scale / 100;
     var backgroundGraphicWidth = this.documentData.backgroundGraphic.backgroundGraphicImageSize.x * scale;
     var backgroundGraphicHeight = this.documentData.backgroundGraphic.backgroundGraphicImageSize.y * scale;
@@ -276,8 +275,11 @@ var App = {
     this.drawForeground(canvas, context);
   },
   drawForegroundGraphic(canvas, context) {
+    var scale = this.documentData.foregroundGraphic.foregroundGraphicImageSize.scale / 100;
+    var foregroundGraphicWidth = this.documentData.foregroundGraphic.foregroundGraphicImageSize.x * scale;
+    var foregroundGraphicHeight = this.documentData.foregroundGraphic.foregroundGraphicImageSize.y * scale;
     console.log('drawing fg graphic', this.documentData.foregroundGraphic);
-    context.drawImage(this.documentData.foregroundGraphic.foregroundGraphicImage, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y, this.documentData.foregroundGraphic.foregroundGraphicImageSize.x, this.documentData.foregroundGraphic.foregroundGraphicImageSize.y);
+    context.drawImage(this.documentData.foregroundGraphic.foregroundGraphicImage, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y, foregroundGraphicWidth, foregroundGraphicHeight);
   },
   handleMouseDown(e) {
     this.documentData.canMouseX = event.clientX;

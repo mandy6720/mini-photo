@@ -459,7 +459,7 @@ exports.default = {
 
     panel.addRange('Scale', 0, 200, 100, 1, this.resizeImage.bind(this));
     panel.addRange('Rotation', 0, 360, 0, 15, this.resizeImage.bind(this));
-    panel.addRange('Opacity', 0, 1, 1, .01, this.changeImageOpacity.bind(this));
+    panel.addRange('Opacity', 0, 100, 100, 1, this.changeImageOpacity.bind(this));
 
     var lightbox = basicLightbox.create('\n      <div class="modal">\n        <div class="lightbox-container clearfix">\n          <div class="' + this.selectedLayer + ' image-thumb" id="graphic1"></div>\n          <div class="' + this.selectedLayer + ' image-thumb" id="graphic2"></div>\n          <div class="img-sources">\n            <img src="img/graphic_1.png" id="graphic1-source" class="img-source-graphic" />\n            <img src="img/graphic_2.png" id="graphic2-source" class="img-source-graphic" />\n          </div>\n        </div>\n        <a class="close-button">x</a>\n        <button class="qs_button secondary">Select Image</button>\n      </div>', {
       beforeShow: function beforeShow(instance) {
@@ -491,7 +491,6 @@ exports.default = {
                 scale: 100
               };
               _this.handleChange();
-              console.log(_this.selectedLayer, 'choose graphic', _this.documentData.backgroundGraphic);
             } else if (_this.selectedLayer === 'fg-graphic') {
               _this.documentData.foregroundGraphic.foregroundGraphicImagePosition = { x: 0, y: 0 };
               _this.documentData.foregroundGraphic.foregroundGraphicImage = selectedGraphicImage;
@@ -501,7 +500,6 @@ exports.default = {
                 y: _this.documentData.foregroundGraphic.foregroundGraphicImage.height,
                 scale: 100
               };
-              console.log(_this.selectedLayer, 'choose graphic', _this.documentData.foregroundGraphic);
             }
 
             instance.close();
@@ -532,6 +530,12 @@ exports.default = {
   },
   resizeImage: function resizeImage(e) {
     console.log(this.selectedLayer, '- resize to', e);
+    if (this.selectedLayer === 'bg-graphic') {
+      this.documentData.backgroundGraphic.backgroundGraphicImageSize.scale = e;
+    } else if (this.selectedLayer === 'fg-graphic') {
+      this.documentData.foregroundGraphic.foregroundGraphicImageSize.scale = e;
+    }
+    this.handleChange();
   },
   changeImageRotation: function changeImageRotation(e) {
     console.log(this.selectedLayer, '- changeImageRotation to', e);
@@ -984,7 +988,6 @@ var App = {
     this.drawBackground(canvas, context, resolution);
   },
   drawBackgroundGraphic: function drawBackgroundGraphic(canvas, context) {
-    console.log('[BGG]', this.documentData.backgroundGraphic.backgroundGraphicImageSize);
     var scale = this.documentData.backgroundGraphic.backgroundGraphicImageSize.scale / 100;
     var backgroundGraphicWidth = this.documentData.backgroundGraphic.backgroundGraphicImageSize.x * scale;
     var backgroundGraphicHeight = this.documentData.backgroundGraphic.backgroundGraphicImageSize.y * scale;
@@ -993,8 +996,11 @@ var App = {
     this.drawForeground(canvas, context);
   },
   drawForegroundGraphic: function drawForegroundGraphic(canvas, context) {
+    var scale = this.documentData.foregroundGraphic.foregroundGraphicImageSize.scale / 100;
+    var foregroundGraphicWidth = this.documentData.foregroundGraphic.foregroundGraphicImageSize.x * scale;
+    var foregroundGraphicHeight = this.documentData.foregroundGraphic.foregroundGraphicImageSize.y * scale;
     console.log('drawing fg graphic', this.documentData.foregroundGraphic);
-    context.drawImage(this.documentData.foregroundGraphic.foregroundGraphicImage, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y, this.documentData.foregroundGraphic.foregroundGraphicImageSize.x, this.documentData.foregroundGraphic.foregroundGraphicImageSize.y);
+    context.drawImage(this.documentData.foregroundGraphic.foregroundGraphicImage, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y, foregroundGraphicWidth, foregroundGraphicHeight);
   },
   handleMouseDown: function handleMouseDown(e) {
     this.documentData.canMouseX = event.clientX;
