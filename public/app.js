@@ -1016,8 +1016,8 @@ var App = {
     var backgroundGraphicHeight = this.documentData.backgroundGraphic.backgroundGraphicImageSize.y * scale;
     if (this.documentData.backgroundGraphic.backgroundGraphicRotation !== 0) {
       // store width and height for easier translation
-      var width = this.documentData.backgroundGraphic.backgroundGraphicImageSize.x;
-      var height = this.documentData.backgroundGraphic.backgroundGraphicImageSize.y;
+      var width = backgroundGraphicWidth;
+      var height = backgroundGraphicHeight;
       context.save(); // save current state
       // check if opacity is also set
       if (this.documentData.backgroundGraphic.backgroundGraphicOpacity !== 1) {
@@ -1045,7 +1045,22 @@ var App = {
     var scale = this.documentData.foregroundGraphic.foregroundGraphicImageSize.scale / 100;
     var foregroundGraphicWidth = this.documentData.foregroundGraphic.foregroundGraphicImageSize.x * scale;
     var foregroundGraphicHeight = this.documentData.foregroundGraphic.foregroundGraphicImageSize.y * scale;
-    if (this.documentData.foregroundGraphic.foregroundGraphicOpacity !== 1) {
+    if (this.documentData.foregroundGraphic.foregroundGraphicRotation !== 0) {
+      // store width and height for easier translation
+      var width = foregroundGraphicWidth;
+      var height = foregroundGraphicHeight;
+      context.save(); // save current state
+      // check if opacity is also set
+      if (this.documentData.foregroundGraphic.foregroundGraphicOpacity !== 1) {
+        context.globalAlpha = this.documentData.foregroundGraphic.foregroundGraphicOpacity;
+      }
+      context.translate(width / 2, height / 2);
+      context.rotate(this.convertToRadians(this.documentData.foregroundGraphic.foregroundGraphicRotation));
+      context.translate(width / -2, height / -2);
+
+      context.drawImage(this.documentData.foregroundGraphic.foregroundGraphicImage, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y, foregroundGraphicWidth, foregroundGraphicHeight);
+      context.restore();
+    } else if (this.documentData.foregroundGraphic.foregroundGraphicOpacity !== 1) {
       context.save();
       context.globalAlpha = this.documentData.foregroundGraphic.foregroundGraphicOpacity;
       context.drawImage(this.documentData.foregroundGraphic.foregroundGraphicImage, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y, foregroundGraphicWidth, foregroundGraphicHeight);
