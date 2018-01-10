@@ -1073,6 +1073,10 @@ var App = {
   handleMouseDown: function handleMouseDown(e) {
     this.documentData.canMouseX = event.clientX;
     this.documentData.canMouseY = event.clientY;
+    this.documentData.startingPosition = {
+      x: this.documentData.foreground.foregroundImagePosition.x,
+      y: this.documentData.foreground.foregroundImagePosition.y
+    };
     this.isDragging = true;
   },
   handleMouseUp: function handleMouseUp(e) {
@@ -1087,8 +1091,8 @@ var App = {
         case 'foreground':
           var deltaX = this.documentData.foreground.foregroundImagePosition.x + this.documentData.canMouseX;
           var deltaY = this.documentData.foreground.foregroundImagePosition.y + this.documentData.canMouseY;
-          this.documentData.foreground.foregroundImagePosition.x = e.clientX - this.documentData.canMouseX;
-          this.documentData.foreground.foregroundImagePosition.y = e.clientY - this.documentData.canMouseY;
+          this.documentData.foreground.foregroundImagePosition.x = e.clientX - this.documentData.canMouseX + this.documentData.startingPosition.x;
+          this.documentData.foreground.foregroundImagePosition.y = e.clientY - this.documentData.canMouseY + this.documentData.startingPosition.y;
           console.log(e.clientX - this.documentData.canMouseX, e.clientY - this.documentData.canMouseY);
           this.refreshCanvas(this.canvasElem, this.canvasContext);
           break;
