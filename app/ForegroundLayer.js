@@ -81,7 +81,6 @@ export default {
     this.handleChange();
   },
   onChooseImage(fileObj) {
-    console.log(this.documentData.foreground, fileObj);
     this.documentData.foreground.foregroundImage = fileObj;
     this.handleChange();
   }

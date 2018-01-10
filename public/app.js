@@ -407,7 +407,6 @@ exports.default = {
     this.handleChange();
   },
   onChooseImage: function onChooseImage(fileObj) {
-    console.log(this.documentData.foreground, fileObj);
     this.documentData.foreground.foregroundImage = fileObj;
     this.handleChange();
   }
@@ -641,7 +640,8 @@ var App = {
       foregroundImagePosition: {
         x: 0,
         y: 0
-      }
+      },
+      foregroundImageFile: null
     },
     foregroundGraphic: {}
   },
@@ -789,6 +789,7 @@ var App = {
     var drawFgPromise = new Promise(function (resolve, reject) {
       var foregroundImageSize;
       if (_this2.documentData.foreground.foregroundImage) {
+        console.log(_this2.documentData.foreground);
         foregroundImageSize = Object.assign({}, {
           x: _this2.documentData.foreground.foregroundImage.width,
           y: _this2.documentData.foreground.foregroundImage.height
@@ -800,8 +801,21 @@ var App = {
       }
 
       if (_this2.documentData.foreground.foregroundImage && _this2.documentData.foreground.foregroundImage.classList && _this2.documentData.foreground.foregroundImage.classList.contains('img-source-fg')) {
+        _this2.documentData.foreground.foregroundImageFile = null;
         context.drawImage(_this2.documentData.foreground.foregroundImage, _this2.documentData.foreground.foregroundImagePosition.x, _this2.documentData.foreground.foregroundImagePosition.y, foregroundImageSize.x, foregroundImageSize.y);
         resolve();
+      } else if (_this2.documentData.foreground.foregroundImageFile !== null) {
+        console.log('handle draw file', _this2.documentData.foreground);
+        foregroundImageSize.x = _this2.documentData.foreground.foregroundImageSize.width * scale;
+        foregroundImageSize.y = _this2.documentData.foreground.foregroundImageSize.height * scale;
+        var img;
+        var docData = _this2.documentData;
+        img = new Image();
+        img.onload = function () {
+          context.drawImage(img, docData.foreground.foregroundImagePosition.x, docData.foreground.foregroundImagePosition.y, foregroundImageSize.x, foregroundImageSize.y);
+          resolve(img);
+        };
+        img.src = _this2.documentData.foreground.foregroundImageFile;
       } else if (_this2.documentData.foreground.foregroundImage && _this2.documentData.foreground.foregroundImage.name !== '') {
         console.log('file upload');
         var reader = new FileReader();
@@ -811,9 +825,9 @@ var App = {
           docData.foreground.foregroundImageFile = event.target.result;
           img = new Image();
           img.onload = function () {
-            foregroundImageSize.x = this.width;
-            foregroundImageSize.y = this.height;
-            context.drawImage(img, docData.foreground.foregroundImagePosition.x, docData.foreground.foregroundImagePosition.y, foregroundImageSize.x, foregroundImageSize.y);
+            docData.foreground.foregroundImageSize.width = this.width;
+            docData.foreground.foregroundImageSize.height = this.height;
+            context.drawImage(img, docData.foreground.foregroundImagePosition.x, docData.foreground.foregroundImagePosition.y, docData.foreground.foregroundImageSize.width, docData.foreground.foregroundImageSize.height);
             resolve(img);
           };
           img.src = event.target.result;
@@ -822,7 +836,7 @@ var App = {
       }
     });
     drawFgPromise.then(function (img) {
-      console.log('done drawing fg');
+      console.log('done drawing fg', _this2.documentData.foreground);
     });
   },
   refreshCanvas: function refreshCanvas(canvas, context, resolution) {

@@ -37,7 +37,8 @@ var App = {
       foregroundImagePosition: {
         x: 0,
         y: 0
-      }
+      },
+      foregroundImageFile: null,
     },
     foregroundGraphic: {},
   },
@@ -182,6 +183,7 @@ var App = {
     var drawFgPromise = new Promise((resolve, reject) => {
       var foregroundImageSize;
       if (this.documentData.foreground.foregroundImage) {
+        console.log(this.documentData.foreground)
         foregroundImageSize = Object.assign({}, {
           x: this.documentData.foreground.foregroundImage.width,
           y: this.documentData.foreground.foregroundImage.height
@@ -194,8 +196,21 @@ var App = {
       
       if (this.documentData.foreground.foregroundImage && this.documentData.foreground.foregroundImage.classList && 
         this.documentData.foreground.foregroundImage.classList.contains('img-source-fg')) {
+        this.documentData.foreground.foregroundImageFile = null;
         context.drawImage(this.documentData.foreground.foregroundImage, this.documentData.foreground.foregroundImagePosition.x, this.documentData.foreground.foregroundImagePosition.y, foregroundImageSize.x, foregroundImageSize.y);
         resolve();
+      } else if (this.documentData.foreground.foregroundImageFile !== null) {
+        console.log('handle draw file', this.documentData.foreground);
+        foregroundImageSize.x = this.documentData.foreground.foregroundImageSize.width * scale;
+        foregroundImageSize.y = this.documentData.foreground.foregroundImageSize.height * scale;
+        var img;
+        var docData = this.documentData;
+        img = new Image();
+        img.onload = function(){
+          context.drawImage(img, docData.foreground.foregroundImagePosition.x, docData.foreground.foregroundImagePosition.y, foregroundImageSize.x, foregroundImageSize.y);
+          resolve(img);
+        }
+        img.src = this.documentData.foreground.foregroundImageFile;
       } else if (this.documentData.foreground.foregroundImage && this.documentData.foreground.foregroundImage.name !== '') {
         console.log('file upload');
         var reader = new FileReader();
@@ -205,18 +220,18 @@ var App = {
           docData.foreground.foregroundImageFile = event.target.result;
           img = new Image();
           img.onload = function(){
-            foregroundImageSize.x = this.width;
-            foregroundImageSize.y = this.height;
-            context.drawImage(img, docData.foreground.foregroundImagePosition.x, docData.foreground.foregroundImagePosition.y, foregroundImageSize.x, foregroundImageSize.y);
+            docData.foreground.foregroundImageSize.width = this.width;
+            docData.foreground.foregroundImageSize.height = this.height;
+            context.drawImage(img, docData.foreground.foregroundImagePosition.x, docData.foreground.foregroundImagePosition.y, docData.foreground.foregroundImageSize.width, docData.foreground.foregroundImageSize.height);
             resolve(img);
           }
           img.src = event.target.result;
         }
         reader.readAsDataURL(this.documentData.foreground.foregroundImage);
-      }
+      } 
     });
     drawFgPromise.then((img) => {
-      console.log('done drawing fg');
+      console.log('done drawing fg', this.documentData.foreground);
     })
   },
   refreshCanvas(canvas, context, resolution) {
