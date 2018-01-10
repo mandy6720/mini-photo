@@ -92,7 +92,7 @@ export default {
         break;
       case 'bg-graphic':
       case 'fg-graphic': 
-        Graphic.createLayer(panel);
+        Graphic.createLayer(panel, this.documentData, this.selectedLayer);
         break;
       case 'foreground':
         Foreground.createLayer(panel, this.documentData);

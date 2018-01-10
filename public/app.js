@@ -428,12 +428,39 @@ var _quicksettings = require('quicksettings');
 
 var _quicksettings2 = _interopRequireDefault(_quicksettings);
 
+var _util = require('./util.js');
+
+var _util2 = _interopRequireDefault(_util);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = {
-  createLayer: function createLayer(panel, documentData) {
+  panel: null,
+  selectedLayer: null,
+  documentData: null,
+
+  handleChange: function handleChange() {
+    console.log("changed document - " + this.selectedLayer);
+  },
+
+  createLayer: function createLayer(panel, documentData, selectedLayer) {
     console.log(panel, documentData);
-    panel.addText('FG', "hi i'm the graphic layer");
+    this.panel = panel;
+    this.documentData = documentData;
+    this.selectedLayer = selectedLayer;
+
+    panel.addRange('Scale', 0, 200, 100, 1, this.resizeImage.bind(this));
+    panel.addRange('Rotation', 0, 360, 0, 15, this.resizeImage.bind(this));
+    panel.addRange('Opacity', 0, 1, 1, .01, this.changeImageOpacity.bind(this));
+  },
+  resizeImage: function resizeImage(e) {
+    console.log(this.selectedLayer, '- resize to', e);
+  },
+  changeImageRotation: function changeImageRotation(e) {
+    console.log(this.selectedLayer, '- changeImageRotation to', e);
+  },
+  changeImageOpacity: function changeImageOpacity(e) {
+    console.log(this.selectedLayer, '- changeImageOpacity to', e);
   }
 };
 });
@@ -559,7 +586,7 @@ exports.default = {
         break;
       case 'bg-graphic':
       case 'fg-graphic':
-        _GraphicLayer2.default.createLayer(panel);
+        _GraphicLayer2.default.createLayer(panel, this.documentData, this.selectedLayer);
         break;
       case 'foreground':
         _ForegroundLayer2.default.createLayer(panel, this.documentData);
