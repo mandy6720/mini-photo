@@ -273,7 +273,7 @@ var App = {
   },
   drawForegroundGraphic(canvas, context) {
     console.log('drawing fg graphic', this.documentData.foregroundGraphic);
-    context.drawImage(this.documentData.foregroundGraphic.foregroundGraphicImage, 0, 0, this.documentData.foregroundGraphic.foregroundGraphicImageSize.x, this.documentData.foregroundGraphic.foregroundGraphicImageSize.y);
+    context.drawImage(this.documentData.foregroundGraphic.foregroundGraphicImage, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y, this.documentData.foregroundGraphic.foregroundGraphicImageSize.x, this.documentData.foregroundGraphic.foregroundGraphicImageSize.y);
   },
   handleMouseDown(e) {
     this.documentData.canMouseX = event.clientX;
@@ -300,6 +300,9 @@ var App = {
           this.refreshCanvas(this.canvasElem, this.canvasContext);
           break;
         case 'fg-graphic':
+          this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x = e.clientX;
+          this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y = e.clientY;
+          this.refreshCanvas(this.canvasElem, this.canvasContext);
           break;
         default:
           break;
