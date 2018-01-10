@@ -271,26 +271,29 @@ var App = {
     var scale = this.documentData.backgroundGraphic.backgroundGraphicImageSize.scale / 100;
     var backgroundGraphicWidth = this.documentData.backgroundGraphic.backgroundGraphicImageSize.x * scale;
     var backgroundGraphicHeight = this.documentData.backgroundGraphic.backgroundGraphicImageSize.y * scale;
-    if (this.documentData.backgroundGraphic.backgroundGraphicOpacity !== 1) {
-      context.save();
-      context.globalAlpha = this.documentData.backgroundGraphic.backgroundGraphicOpacity;
-      context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, backgroundGraphicWidth, backgroundGraphicHeight);
-      context.restore();
-    } else if (this.documentData.backgroundGraphic.backgroundGraphicRotation !== 0) {
-      
+    if (this.documentData.backgroundGraphic.backgroundGraphicRotation !== 0) {
+      // store width and height for easier translation
       var width = this.documentData.backgroundGraphic.backgroundGraphicImageSize.x;
       var height = this.documentData.backgroundGraphic.backgroundGraphicImageSize.y;
-      console.log('[LOO0K]', width, height)
       context.save(); // save current state
-      
+      // check if opacity is also set
+      if (this.documentData.backgroundGraphic.backgroundGraphicOpacity !== 1) {
+        context.globalAlpha = this.documentData.backgroundGraphic.backgroundGraphicOpacity;
+      }
       context.translate(width/2,height/2);
       context.rotate(this.convertToRadians(this.documentData.backgroundGraphic.backgroundGraphicRotation));
       context.translate((width/-2),height/-2); 
 
       context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, backgroundGraphicWidth, backgroundGraphicHeight);
       context.restore();
+    } else if (this.documentData.backgroundGraphic.backgroundGraphicOpacity !== 1) {
+      // only opacity is set
+      context.save();
+      context.globalAlpha = this.documentData.backgroundGraphic.backgroundGraphicOpacity;
+      context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, backgroundGraphicWidth, backgroundGraphicHeight);
+      context.restore();
     } else {
-      // no opacity change
+      // no opacity change or rotation
       context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, backgroundGraphicWidth, backgroundGraphicHeight);
     }
     this.drawForeground(canvas, context);
