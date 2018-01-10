@@ -255,9 +255,7 @@ var App = {
       resolve();
     });
     drawFgPromise.then((img) => {
-      console.log('done drawing fg', this.documentData.foreground);
       if (this.documentData.foregroundGraphic.drawFgGraphic === true) {
-        console.log('drawBackgroundGraphic');
         this.drawForegroundGraphic(this.canvasElem, this.canvasContext);
       }
     })
@@ -278,10 +276,18 @@ var App = {
       context.globalAlpha = this.documentData.backgroundGraphic.backgroundGraphicOpacity;
       context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, backgroundGraphicWidth, backgroundGraphicHeight);
       context.restore();
+    } else if (this.documentData.backgroundGraphic.backgroundGraphicRotation !== 0) {
+      console.log(this.documentData.backgroundGraphic.backgroundGraphicRotation);
+      context.save(); // save current state
+      context.translate(this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y);
+      context.rotate(this.convertToRadians(this.documentData.backgroundGraphic.backgroundGraphicRotation)); // rotate
+      context.translate(-this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, -this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y);
+      context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, backgroundGraphicWidth, backgroundGraphicHeight);
+      context.restore();
     } else {
+      // no opacity change
       context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, backgroundGraphicWidth, backgroundGraphicHeight);
     }
-    console.log(this.documentData.backgroundGraphic.backgroundGraphicImageSize)
     this.drawForeground(canvas, context);
   },
   drawForegroundGraphic(canvas, context) {
@@ -294,6 +300,7 @@ var App = {
       context.drawImage(this.documentData.foregroundGraphic.foregroundGraphicImage, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y, foregroundGraphicWidth, foregroundGraphicHeight);
       context.restore();
     } else {
+      // no opacity change
       context.drawImage(this.documentData.foregroundGraphic.foregroundGraphicImage, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y, foregroundGraphicWidth, foregroundGraphicHeight);
     }
   },
@@ -337,9 +344,13 @@ var App = {
   startDownload() {
     // test downloadjs
     // download("hello world", "dlText.txt", "text/plain");
-		
-
     download(this.canvasElem.toDataURL('image/png'),`${this.fileBaseName}${Date.now()}.png`,'image/png');
+  },
+  convertToRadians(degree) {
+    // 15deg = pi/12
+    var a = degree / 15;
+    var radianValue = a * (Math.PI/12);
+    return radianValue;
   }
 }
 

@@ -113,7 +113,12 @@ export default {
     this.handleChange();
   },
   changeImageRotation(e) {
-    console.log(this.selectedLayer, '- changeImageRotation to', e);
+    if (this.selectedLayer === 'bg-graphic') {
+      this.documentData.backgroundGraphic.backgroundGraphicRotation = e;
+    } else if (this.selectedLayer === 'fg-graphic') {
+      this.documentData.foregroundGraphic.foregroundGraphicRotation = e;
+    }
+    this.handleChange();
   },
   changeImageOpacity(e) {
     if (this.selectedLayer === 'bg-graphic') {

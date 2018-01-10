@@ -538,7 +538,12 @@ exports.default = {
     this.handleChange();
   },
   changeImageRotation: function changeImageRotation(e) {
-    console.log(this.selectedLayer, '- changeImageRotation to', e);
+    if (this.selectedLayer === 'bg-graphic') {
+      this.documentData.backgroundGraphic.backgroundGraphicRotation = e;
+    } else if (this.selectedLayer === 'fg-graphic') {
+      this.documentData.foregroundGraphic.foregroundGraphicRotation = e;
+    }
+    this.handleChange();
   },
   changeImageOpacity: function changeImageOpacity(e) {
     if (this.selectedLayer === 'bg-graphic') {
@@ -993,9 +998,7 @@ var App = {
       resolve();
     });
     drawFgPromise.then(function (img) {
-      console.log('done drawing fg', _this2.documentData.foreground);
       if (_this2.documentData.foregroundGraphic.drawFgGraphic === true) {
-        console.log('drawBackgroundGraphic');
         _this2.drawForegroundGraphic(_this2.canvasElem, _this2.canvasContext);
       }
     });
@@ -1016,10 +1019,18 @@ var App = {
       context.globalAlpha = this.documentData.backgroundGraphic.backgroundGraphicOpacity;
       context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, backgroundGraphicWidth, backgroundGraphicHeight);
       context.restore();
+    } else if (this.documentData.backgroundGraphic.backgroundGraphicRotation !== 0) {
+      console.log(this.documentData.backgroundGraphic.backgroundGraphicRotation);
+      context.save(); // save current state
+      context.translate(this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y);
+      context.rotate(this.convertToRadians(this.documentData.backgroundGraphic.backgroundGraphicRotation)); // rotate
+      context.translate(-this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, -this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y);
+      context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, backgroundGraphicWidth, backgroundGraphicHeight);
+      context.restore();
     } else {
+      // no opacity change
       context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, backgroundGraphicWidth, backgroundGraphicHeight);
     }
-    console.log(this.documentData.backgroundGraphic.backgroundGraphicImageSize);
     this.drawForeground(canvas, context);
   },
   drawForegroundGraphic: function drawForegroundGraphic(canvas, context) {
@@ -1032,6 +1043,7 @@ var App = {
       context.drawImage(this.documentData.foregroundGraphic.foregroundGraphicImage, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y, foregroundGraphicWidth, foregroundGraphicHeight);
       context.restore();
     } else {
+      // no opacity change
       context.drawImage(this.documentData.foregroundGraphic.foregroundGraphicImage, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y, foregroundGraphicWidth, foregroundGraphicHeight);
     }
   },
@@ -1075,9 +1087,13 @@ var App = {
   startDownload: function startDownload() {
     // test downloadjs
     // download("hello world", "dlText.txt", "text/plain");
-
-
     (0, _downloadjs2.default)(this.canvasElem.toDataURL('image/png'), '' + this.fileBaseName + Date.now() + '.png', 'image/png');
+  },
+  convertToRadians: function convertToRadians(degree) {
+    // 15deg = pi/12
+    var a = degree / 15;
+    var radianValue = a * (Math.PI / 12);
+    return radianValue;
   }
 };
 
