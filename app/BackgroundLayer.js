@@ -11,7 +11,7 @@ export default {
   selectedSwatchGroup: null,
   documentData: null,
 
-  handleChange : function() {console.log("changed document")},
+  handleChange : function() {console.log("changed document - background")},
 
   createLayer(panel, documentData) {
     this.panel = panel;
@@ -59,7 +59,6 @@ export default {
         <button class="qs_button secondary">Select Image</button>
       </div>`, {
         beforeShow: (instance) => {
-          console.log(this.documentData.background);
           if (this.documentData.background.backgroundImage.classList && 
             this.documentData.background.backgroundImage.classList.contains('img-source')) {
             instance.element().querySelector(`#${this.documentData.background.backgroundImage.id}`).classList.add('selected');
@@ -74,6 +73,7 @@ export default {
               var sourceImg = `#${selected[0].id}-source`;
               var selectedBgImage = instance.element().querySelector(sourceImg);
               this.documentData.background.backgroundImage = selectedBgImage;
+              this.documentData.background.useColorOnly = false;
               instance.close();
               this.handleChange();
             }
@@ -81,11 +81,11 @@ export default {
           var thumbs = instance.element().querySelectorAll('.image-thumb');
           _.forEach(thumbs, (thumb) => {
             thumb.onclick = (e) => {
-              // remove from others
               // if not already selected, add to clicked
               if (!e.target.classList.contains('selected')) {
                 var currentSelection = instance.element().querySelectorAll('.selected');
                 if (currentSelection.length > 0) {
+                  // remove from others
                   currentSelection[0].classList.remove('selected');
                 }
                 e.target.classList.add('selected');
@@ -99,7 +99,7 @@ export default {
       });
     
     var lightboxButton = qsUtil.createButton("Open", "secondary", lightbox.show.bind(this));
-    panel.addElement('lightbox', lightboxButton)
+    panel.addElement('Or choose from library:', lightboxButton)
 
 
   },
@@ -112,14 +112,12 @@ export default {
     heightElem.id = 'height';
     heightElem.classList += " half-width";
   },
-  onSelectColor(info) {
-    console.log('Selected color', info.value);
-  },
   onChooseImage(fileObj) {
     // var fileURL = URL.createObjectURL(fileObj);
     // this.documentData.background.backgroundImage.src = fileURL; 
     console.log(this.documentData.background, fileObj);
     this.documentData.background.backgroundImage = fileObj;
+    this.documentData.background.useColorOnly = false;
     this.handleChange();
   },
   onSelectSwatchGroup(info) {
@@ -147,7 +145,7 @@ export default {
 		qsUtil.addSwatchHighlight(elem);
     this.selectedSwatchElem = elem;
     this.documentData.background.backgroundColor = swatch.color;
+    this.documentData.background.useColorOnly = true;
     this.handleChange();
-    console.log(this.documentData, swatch)
   },
 }

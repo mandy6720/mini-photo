@@ -92,17 +92,23 @@ export default {
         break;
       case 'bg-graphic':
       case 'fg-graphic': 
-        Graphic.createLayer(panel);
+        Graphic.createLayer(panel, this.documentData, this.selectedLayer);
         break;
       case 'foreground':
-        Foreground.createLayer(panel);
+        Foreground.createLayer(panel, this.documentData);
         break;
       default:
         break;
     }
+    // This is the fastest location to rebuild the download link last
+    this.addDownloadButton(panel);
+  },
+  addDownloadButton(panel) {
+    panel.addButton('Download', () => {
+      this.startDownload();
+    });
   },
   updatePanel(newPanelType) {
-    
     var panelInputs = document.getElementsByClassName('qs_container');
 
     for (var i = panelInputs.length - 1; i > 0; i--) {
@@ -111,7 +117,5 @@ export default {
       }
     }
     this.addLayerSpecificInputs(this.panel);
-
-    console.log('newPanelType', newPanelType);
   },
 }

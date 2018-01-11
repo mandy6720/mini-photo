@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "basiclightbox": "^4.0.0",
+    "downloadjs": "^1.4.7",
     "lodash": "^4.17.4",
     "paper": "^0.10.3",
     "quicksettings": "^3.0.1"
