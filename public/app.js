@@ -353,8 +353,8 @@ exports.default = {
     this.panel = panel;
     this.documentData = documentData;
 
-    panel.addRange('Size', 0, 300, 100, 1, this.resizeImage.bind(this));
-    document.getElementById('Size').addEventListener('mouseup', console.log('final'));
+    panel.addRange('Size', 0, 200, this.documentData.foreground.foregroundImageSize.scale, 1, this.resizeImage.bind(this));
+    // document.getElementById('Size').addEventListener('mouseup', console.log('final'));
 
     panel.addFileChooser('Foreground Image', '', 'image/*', this.onChooseImage.bind(this));
 
