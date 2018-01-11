@@ -330,10 +330,28 @@ var App = {
   handleMouseDown(e) {
     this.documentData.canMouseX = event.clientX;
     this.documentData.canMouseY = event.clientY;
-    this.documentData.startingPosition = {
-      x: this.documentData.foreground.foregroundImagePosition.x,
-      y: this.documentData.foreground.foregroundImagePosition.y
-    };
+    switch (this.selectedLayer) {
+      case 'foreground':
+        this.documentData.foreground.startingPosition = {
+          x: this.documentData.foreground.foregroundImagePosition.x,
+          y: this.documentData.foreground.foregroundImagePosition.y
+        };
+        break;
+      case 'fg-graphic':
+        this.documentData.foregroundGraphic.startingPosition = {
+          x: this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x,
+          y: this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y
+        };
+        break;
+      case 'bg-graphic':
+        this.documentData.backgroundGraphic.startingPosition = {
+          x: this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x,
+          y: this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y
+        };
+        break;
+      default:
+        break;
+    }
     this.isDragging = true;
   },
   handleMouseUp(e) {
@@ -348,19 +366,23 @@ var App = {
         case 'foreground':
           var deltaX = this.documentData.foreground.foregroundImagePosition.x + this.documentData.canMouseX;
           var deltaY = this.documentData.foreground.foregroundImagePosition.y + this.documentData.canMouseY;
-          this.documentData.foreground.foregroundImagePosition.x = e.clientX - this.documentData.canMouseX + this.documentData.startingPosition.x;
-          this.documentData.foreground.foregroundImagePosition.y = e.clientY - this.documentData.canMouseY + this.documentData.startingPosition.y;
+          this.documentData.foreground.foregroundImagePosition.x = e.clientX - this.documentData.canMouseX + this.documentData.foreground.startingPosition.x;
+          this.documentData.foreground.foregroundImagePosition.y = e.clientY - this.documentData.canMouseY + this.documentData.foreground.startingPosition.y;
           console.log(e.clientX - this.documentData.canMouseX, e.clientY - this.documentData.canMouseY)
           this.refreshCanvas(this.canvasElem, this.canvasContext);
           break;
         case 'bg-graphic':
-          this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x = e.clientX;
-          this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y = e.clientY;
+          var deltaX = this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x + this.documentData.canMouseX;
+          var deltaY = this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y + this.documentData.canMouseY;
+          this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x = e.clientX - this.documentData.canMouseX + this.documentData.backgroundGraphic.startingPosition.x;
+          this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y = e.clientY - this.documentData.canMouseY + this.documentData.backgroundGraphic.startingPosition.y;
           this.refreshCanvas(this.canvasElem, this.canvasContext);
           break;
         case 'fg-graphic':
-          this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x = e.clientX;
-          this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y = e.clientY;
+          var deltaX = this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x + this.documentData.canMouseX;
+          var deltaY = this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y + this.documentData.canMouseY;
+          this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x = e.clientX - this.documentData.canMouseX + this.documentData.foregroundGraphic.startingPosition.x;
+          this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y = e.clientY - this.documentData.canMouseY + this.documentData.foregroundGraphic.startingPosition.y;
           this.refreshCanvas(this.canvasElem, this.canvasContext);
           break;
         default:
