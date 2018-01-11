@@ -186,7 +186,7 @@ exports.default = {
   documentData: null,
 
   handleChange: function handleChange() {
-    console.log("changed document");
+    console.log("changed document - background");
   },
 
   createLayer: function createLayer(panel, documentData) {
@@ -222,7 +222,6 @@ exports.default = {
 
     var lightbox = basicLightbox.create('\n      <div class="modal">\n        <div class="lightbox-container clearfix">\n          <div class="background image-thumb" id="bg1"></div>\n          <div class="background image-thumb" id="bg2"></div>\n          <div class="img-sources">\n            <img src="img/background_1.jpg" id="bg1-source" class="img-source" />\n            <img src="img/background_2.jpg" id="bg2-source" class="img-source" />\n          </div>\n        </div>\n        <a class="close-button">x</a>\n        <button class="qs_button secondary">Select Image</button>\n      </div>', {
       beforeShow: function beforeShow(instance) {
-        console.log(_this.documentData.background);
         if (_this.documentData.background.backgroundImage.classList && _this.documentData.background.backgroundImage.classList.contains('img-source')) {
           instance.element().querySelector('#' + _this.documentData.background.backgroundImage.id).classList.add('selected');
         }
@@ -236,6 +235,7 @@ exports.default = {
             var sourceImg = '#' + selected[0].id + '-source';
             var selectedBgImage = instance.element().querySelector(sourceImg);
             _this.documentData.background.backgroundImage = selectedBgImage;
+            _this.documentData.background.useColorOnly = false;
             instance.close();
             _this.handleChange();
           }
@@ -243,11 +243,11 @@ exports.default = {
         var thumbs = instance.element().querySelectorAll('.image-thumb');
         _lodash2.default.forEach(thumbs, function (thumb) {
           thumb.onclick = function (e) {
-            // remove from others
             // if not already selected, add to clicked
             if (!e.target.classList.contains('selected')) {
               var currentSelection = instance.element().querySelectorAll('.selected');
               if (currentSelection.length > 0) {
+                // remove from others
                 currentSelection[0].classList.remove('selected');
               }
               e.target.classList.add('selected');
@@ -260,7 +260,7 @@ exports.default = {
     });
 
     var lightboxButton = _util2.default.createButton("Open", "secondary", lightbox.show.bind(this));
-    panel.addElement('lightbox', lightboxButton);
+    panel.addElement('Or choose from library:', lightboxButton);
   },
   formatWidthHeightInputs: function formatWidthHeightInputs() {
     var inputsArr = document.getElementsByClassName('qs_container');
@@ -271,14 +271,12 @@ exports.default = {
     heightElem.id = 'height';
     heightElem.classList += " half-width";
   },
-  onSelectColor: function onSelectColor(info) {
-    console.log('Selected color', info.value);
-  },
   onChooseImage: function onChooseImage(fileObj) {
     // var fileURL = URL.createObjectURL(fileObj);
     // this.documentData.background.backgroundImage.src = fileURL; 
     console.log(this.documentData.background, fileObj);
     this.documentData.background.backgroundImage = fileObj;
+    this.documentData.background.useColorOnly = false;
     this.handleChange();
   },
   onSelectSwatchGroup: function onSelectSwatchGroup(info) {
@@ -306,8 +304,8 @@ exports.default = {
     _util2.default.addSwatchHighlight(elem);
     this.selectedSwatchElem = elem;
     this.documentData.background.backgroundColor = swatch.color;
+    this.documentData.background.useColorOnly = true;
     this.handleChange();
-    console.log(this.documentData, swatch);
   }
 };
 });
@@ -327,12 +325,90 @@ var _quicksettings = require('quicksettings');
 
 var _quicksettings2 = _interopRequireDefault(_quicksettings);
 
+var _basiclightbox = require('basiclightbox');
+
+var basicLightbox = _interopRequireWildcard(_basiclightbox);
+
+var _util = require('./util');
+
+var _util2 = _interopRequireDefault(_util);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = {
+  panel: null,
+  documentData: null,
+
+  handleChange: function handleChange() {
+    console.log("changed document - foreground");
+  },
+
   createLayer: function createLayer(panel, documentData) {
-    panel.addText('FG', "hi i'm the foreground");
+    var _this = this;
+
     console.log(panel, documentData);
+
+    this.panel = panel;
+    this.documentData = documentData;
+
+    panel.addRange('Size', 0, 300, 100, 1, this.resizeImage.bind(this));
+    document.getElementById('Size').addEventListener('mouseup', console.log('final'));
+
+    panel.addFileChooser('Foreground Image', '', 'image/*', this.onChooseImage.bind(this));
+
+    var lightbox = basicLightbox.create('\n      <div class="modal">\n        <div class="lightbox-container clearfix">\n          <div class="foreground image-thumb" id="fg1"></div>\n          <div class="foreground image-thumb" id="fg2"></div>\n          <img src="img/foreground_1.png" id="fg1-source" class="img-source-fg" />\n          <img src="img/foreground_2.png" id="fg2-source" class="img-source-fg" />\n        </div>\n        <a class="close-button">x</a>\n        <button class="qs_button secondary">Select Image</button>\n      </div>', {
+      beforeShow: function beforeShow(instance) {
+        // if (this.documentData.background.backgroundImage.classList && 
+        //   this.documentData.background.backgroundImage.classList.contains('img-source')) {
+        //   instance.element().querySelector(`#${this.documentData.background.backgroundImage.id}`).classList.add('selected');
+        // }
+        instance.element().querySelector('a').onclick = instance.close;
+        instance.element().querySelector('button').onclick = function () {
+          // set selected if image is selected
+          // see this.onChooseImage
+          var selected = instance.element().querySelectorAll('.selected');
+          if (selected.length > 0) {
+            var sourceImg = '#' + selected[0].id + '-source';
+            var selectedBgImage = instance.element().querySelector(sourceImg);
+            _this.documentData.foreground.foregroundImage = selectedBgImage;
+            _this.documentData.foreground.foregroundImageSize.scale = 100;
+            _this.imageSize = 100;
+            instance.close();
+            _this.handleChange();
+          }
+        };
+        var thumbs = instance.element().querySelectorAll('.image-thumb');
+        _lodash2.default.forEach(thumbs, function (thumb) {
+          thumb.onclick = function (e) {
+            // if not already selected, add to clicked
+            if (!e.target.classList.contains('selected')) {
+              var currentSelection = instance.element().querySelectorAll('.selected');
+              if (currentSelection.length > 0) {
+                // remove from others
+                currentSelection[0].classList.remove('selected');
+              }
+              e.target.classList.add('selected');
+            } else {
+              e.target.classList.remove('selected');
+            }
+          };
+        });
+      }
+    });
+
+    var lightboxButton = _util2.default.createButton("Open", "secondary", lightbox.show.bind(this));
+    panel.addElement('Or choose from library:', lightboxButton);
+  },
+  resizeImage: function resizeImage(e) {
+    this.documentData.foreground.foregroundImageSize.scale = e;
+    console.log('resize to ', e);
+    this.handleChange();
+  },
+  onChooseImage: function onChooseImage(fileObj) {
+    this.documentData.foreground.foregroundImage = fileObj;
+    this.handleChange();
   }
 };
 });
@@ -352,12 +428,133 @@ var _quicksettings = require('quicksettings');
 
 var _quicksettings2 = _interopRequireDefault(_quicksettings);
 
+var _basiclightbox = require('basiclightbox');
+
+var basicLightbox = _interopRequireWildcard(_basiclightbox);
+
+var _util = require('./util.js');
+
+var _util2 = _interopRequireDefault(_util);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = {
-  createLayer: function createLayer(panel, documentData) {
+  panel: null,
+  selectedLayer: null,
+  documentData: null,
+
+  handleChange: function handleChange() {
+    console.log("changed document - " + this.selectedLayer);
+  },
+
+  createLayer: function createLayer(panel, documentData, selectedLayer) {
+    var _this = this;
+
     console.log(panel, documentData);
-    panel.addText('FG', "hi i'm the graphic layer");
+    this.panel = panel;
+    this.documentData = documentData;
+    this.selectedLayer = selectedLayer;
+
+    panel.addRange('Scale', 0, 200, 100, 1, this.resizeImage.bind(this));
+    panel.addRange('Rotation', 0, 360, 0, 15, this.changeImageRotation.bind(this));
+    panel.addRange('Opacity', 0, 100, this.selectedLayer === 'bg-graphic' ? this.documentData.backgroundGraphic.backgroundGraphicOpacity * 100 : this.documentData.foregroundGraphic.foregroundGraphicOpacity * 100, 1, this.changeImageOpacity.bind(this));
+
+    var lightbox = basicLightbox.create('\n      <div class="modal">\n        <div class="lightbox-container clearfix">\n          <div class="' + this.selectedLayer + ' image-thumb" id="graphic1"></div>\n          <div class="' + this.selectedLayer + ' image-thumb" id="graphic2"></div>\n          <div class="img-sources">\n            <img src="img/graphic_1.png" id="graphic1-source" class="img-source-graphic" />\n            <img src="img/graphic_2.png" id="graphic2-source" class="img-source-graphic" />\n          </div>\n        </div>\n        <a class="close-button">x</a>\n        <button class="qs_button secondary">Select Image</button>\n      </div>', {
+      beforeShow: function beforeShow(instance) {
+        if (_this.selectedLayer == 'bg-graphic') {
+          if (_this.documentData.backgroundGraphic.backgroundGraphicImage.classList && _this.documentData.backgroundGraphic.backgroundGraphicImage.classList.contains('img-source-graphic')) {
+            instance.element().querySelector('#' + _this.documentData.backgroundGraphic.backgroundGraphicImage.id).classList.add('selected');
+          }
+        } else if (_this.selectedLayer == 'fg-graphic') {
+          if (_this.documentData.foregroundGraphic.foregroundGraphicImage.classList && _this.documentData.foregroundGraphic.foregroundGraphicImage.classList.contains('img-source-graphic')) {
+            instance.element().querySelector('#' + _this.documentData.foregroundGraphic.foregroundGraphicImage.id).classList.add('selected');
+          }
+        }
+
+        instance.element().querySelector('a').onclick = instance.close;
+        instance.element().querySelector('button').onclick = function () {
+          // set selected if image is selected
+          // see this.onChooseImage
+          var selected = instance.element().querySelectorAll('.selected');
+          if (selected.length > 0) {
+            var sourceImg = '#' + selected[0].id + '-source';
+            var selectedGraphicImage = instance.element().querySelector(sourceImg);
+            if (_this.selectedLayer === 'bg-graphic') {
+              _this.documentData.backgroundGraphic.backgroundGraphicImagePosition = { x: 0, y: 0 };
+              _this.documentData.backgroundGraphic.backgroundGraphicImage = selectedGraphicImage;
+              _this.documentData.backgroundGraphic.drawBgGraphic = true;
+              _this.documentData.backgroundGraphic.backgroundGraphicImageSize = {
+                x: _this.documentData.backgroundGraphic.backgroundGraphicImage.width,
+                y: _this.documentData.backgroundGraphic.backgroundGraphicImage.height,
+                scale: 100
+              };
+              _this.handleChange();
+            } else if (_this.selectedLayer === 'fg-graphic') {
+              _this.documentData.foregroundGraphic.foregroundGraphicImagePosition = { x: 0, y: 0 };
+              _this.documentData.foregroundGraphic.foregroundGraphicImage = selectedGraphicImage;
+              _this.documentData.foregroundGraphic.drawFgGraphic = true;
+              _this.documentData.foregroundGraphic.foregroundGraphicImageSize = {
+                x: _this.documentData.foregroundGraphic.foregroundGraphicImage.width,
+                y: _this.documentData.foregroundGraphic.foregroundGraphicImage.height,
+                scale: 100
+              };
+            }
+
+            instance.close();
+            _this.handleChange();
+          }
+        };
+        var thumbs = instance.element().querySelectorAll('.image-thumb');
+        _lodash2.default.forEach(thumbs, function (thumb) {
+          thumb.onclick = function (e) {
+            // if not already selected, add to clicked
+            if (!e.target.classList.contains('selected')) {
+              var currentSelection = instance.element().querySelectorAll('.selected');
+              if (currentSelection.length > 0) {
+                // remove from others
+                currentSelection[0].classList.remove('selected');
+              }
+              e.target.classList.add('selected');
+            } else {
+              e.target.classList.remove('selected');
+            }
+          };
+        });
+      }
+    });
+
+    var lightboxButton = _util2.default.createButton("Choose a graphic", "secondary", lightbox.show.bind(this));
+    panel.addElement('', lightboxButton);
+  },
+  resizeImage: function resizeImage(e) {
+    console.log(this.selectedLayer, '- resize to', e);
+    if (this.selectedLayer === 'bg-graphic') {
+      this.documentData.backgroundGraphic.backgroundGraphicImageSize.scale = e;
+    } else if (this.selectedLayer === 'fg-graphic') {
+      this.documentData.foregroundGraphic.foregroundGraphicImageSize.scale = e;
+    }
+    this.handleChange();
+  },
+  changeImageRotation: function changeImageRotation(e) {
+    if (this.selectedLayer === 'bg-graphic') {
+      this.documentData.backgroundGraphic.backgroundGraphicRotation = e;
+    } else if (this.selectedLayer === 'fg-graphic') {
+      this.documentData.foregroundGraphic.foregroundGraphicRotation = e;
+    }
+    this.handleChange();
+  },
+  changeImageOpacity: function changeImageOpacity(e) {
+    if (this.selectedLayer === 'bg-graphic') {
+      this.documentData.backgroundGraphic.backgroundGraphicOpacity = e / 100;
+    } else if (this.selectedLayer === 'fg-graphic') {
+      this.documentData.foregroundGraphic.foregroundGraphicOpacity = e / 100;
+    }
+    this.handleChange();
+  },
+  onChooseImage: function onChooseImage() {
+    console.log(this.selectedLayer, 'choose graphic', this.documentData);
   }
 };
 });
@@ -483,17 +680,25 @@ exports.default = {
         break;
       case 'bg-graphic':
       case 'fg-graphic':
-        _GraphicLayer2.default.createLayer(panel);
+        _GraphicLayer2.default.createLayer(panel, this.documentData, this.selectedLayer);
         break;
       case 'foreground':
-        _ForegroundLayer2.default.createLayer(panel);
+        _ForegroundLayer2.default.createLayer(panel, this.documentData);
         break;
       default:
         break;
     }
+    // This is the fastest location to rebuild the download link last
+    this.addDownloadButton(panel);
+  },
+  addDownloadButton: function addDownloadButton(panel) {
+    var _this = this;
+
+    panel.addButton('Download', function () {
+      _this.startDownload();
+    });
   },
   updatePanel: function updatePanel(newPanelType) {
-
     var panelInputs = document.getElementsByClassName('qs_container');
 
     for (var i = panelInputs.length - 1; i > 0; i--) {
@@ -502,8 +707,6 @@ exports.default = {
       }
     }
     this.addLayerSpecificInputs(this.panel);
-
-    console.log('newPanelType', newPanelType);
   }
 };
 });
@@ -515,8 +718,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var _quicksettings = require('quicksettings');
 
 var _quicksettings2 = _interopRequireDefault(_quicksettings);
@@ -524,6 +725,10 @@ var _quicksettings2 = _interopRequireDefault(_quicksettings);
 var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
+
+var _downloadjs = require('downloadjs');
+
+var _downloadjs2 = _interopRequireDefault(_downloadjs);
 
 var _MainPanel = require('./MainPanel');
 
@@ -533,6 +738,14 @@ var _BackgroundLayer = require('./BackgroundLayer');
 
 var _BackgroundLayer2 = _interopRequireDefault(_BackgroundLayer);
 
+var _ForegroundLayer = require('./ForegroundLayer');
+
+var _ForegroundLayer2 = _interopRequireDefault(_ForegroundLayer);
+
+var _GraphicLayer = require('./GraphicLayer');
+
+var _GraphicLayer2 = _interopRequireDefault(_GraphicLayer);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var App = {
@@ -541,25 +754,58 @@ var App = {
   canvasElem: null,
   hiResCanvasElem: null,
   svgElem: null,
+  fileBaseName: 'download_L2_',
 
   // document data
   documentData: {
+    canMouseX: null,
+    canMouseY: null,
     workspaceSize: { x: 0, y: 0 },
     background: {
       backgroundImageSize: { x: 0, y: 0 },
       backgroundImage: new Image(),
-      backgroundColor: '#000'
+      backgroundColor: '#000',
+      backgroundImageFile: null,
+      useColorOnly: true
     },
-    backgroundGraphic: {},
-    foreground: {},
-    foregroundGraphic: {}
+    backgroundGraphic: {
+      drawBgGraphic: false,
+      backgroundGraphicImageSize: { x: 0, y: 0, scale: 100 },
+      backgroundGraphicImagePosition: { x: 0, y: 0 },
+      backgroundGraphicImage: new Image(),
+      backgroundGraphicOpacity: 1,
+      backgroundGraphicRotation: 0
+    },
+    foreground: {
+      foregroundImage: null,
+      foregroundImageSize: {
+        width: null,
+        height: null,
+        scale: 100
+      },
+      foregroundImagePosition: {
+        x: 0,
+        y: 0
+      },
+      foregroundImageFile: null
+    },
+    foregroundGraphic: {
+      drawFgGraphic: false,
+      foregroundGraphicImageSize: { x: 0, y: 0, scale: 100 },
+      foregroundGraphicImagePosition: { x: 0, y: 0 },
+      foregroundGraphicImage: new Image(),
+      foregroundGraphicOpacity: 1,
+      foregroundGraphicRotation: 0
+    }
   },
 
   // other state
+  canvasOffset: null,
   canvasContext: null,
   hiResContext: null,
   hiResScale: 4,
   selectedLayer: 'background',
+  isDragging: false,
 
   init: function init(rootElem) {
     var canvasElem = document.getElementById("app-canvas");
@@ -577,13 +823,22 @@ var App = {
 
     this.fitCanvasToWindow();
 
+    // add mouse event listeners
+    this.canvasElem.addEventListener('mousedown', this.handleMouseDown.bind(this));
+    this.canvasElem.addEventListener('mouseup', this.handleMouseUp.bind(this));
+    this.canvasElem.addEventListener('mousemove', this.handleMouseMove.bind(this));
+    this.canvasElem.addEventListener('mouseout', this.handleMouseOut.bind(this));
+
     // inset panel here
     _MainPanel2.default.init(rootElem, this.documentData);
     _MainPanel2.default.documentData = this.documentData;
     _MainPanel2.default.selectedLayer = this.selectedLayer;
     _MainPanel2.default.updateCanvas = this.handleSelectLayer.bind(this);
+    _MainPanel2.default.startDownload = this.startDownload.bind(this);
 
     _BackgroundLayer2.default.handleChange = this.refreshCanvas.bind(this);
+    _ForegroundLayer2.default.handleChange = this.refreshCanvas.bind(this, this.canvasElem, this.canvasContext);
+    _GraphicLayer2.default.handleChange = this.refreshCanvas.bind(this);
 
     this.refreshCanvas();
   },
@@ -603,7 +858,6 @@ var App = {
     this.fitBackgroundToCanvas();
   },
   handleSelectLayer: function handleSelectLayer(info) {
-    console.log('[app.js] Changed layer to', info);
     this.selectedLayer = info;
   },
   fitBackgroundToCanvas: function fitBackgroundToCanvas() {
@@ -622,29 +876,132 @@ var App = {
 
     this.documentData.background.backgroundImageSize.x = finalWidth;
     this.documentData.background.backgroundImageSize.y = finalHeight;
+
+    this.canvasContext.fillStyle = this.documentData.background.backgroundColor || "black";
+    this.canvasContext.fillRect(0, 0, canvasWidth, canvasHeight);
+  },
+  changeColor: function changeColor() {
+    this.documentData.background.backgroundImage = new Image();
+    this.documentData.background.backgroundImageFile = null;
+    this.canvasContext.fillStyle = this.documentData.background.backgroundColor || "black";
+    this.canvasContext.fillRect(0, 0, this.documentData.workspaceSize.x, this.documentData.workspaceSize.y);
+    this.refreshCanvas(this.canvasElem, this.canvasContext);
   },
   drawBackground: function drawBackground(canvas, context, resolution) {
-    var backgroundImageSize = Object.assign({}, this.documentData.background.backgroundImageSize);
-    console.log('draw bg', this.documentData.background, backgroundImageSize, resolution);
-    resolution = resolution || 1;
-    backgroundImageSize.x *= resolution;
-    backgroundImageSize.y *= resolution;
-    context.fillStyle = this.documentData.background.backgroundColor || "black";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    if (_typeof(this.documentData.background.backgroundImage.classList.contains('img-source'))) {
-      context.drawImage(this.documentData.background.backgroundImage, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
-    } else if (this.documentData.background.backgroundImage.name !== '') {
-      var reader = new FileReader();
-      reader.onload = function (event) {
-        var img = new Image();
+    var _this = this;
+
+    var drawBgPromise = new Promise(function (resolve, reject) {
+      var backgroundImageSize = Object.assign({}, _this.documentData.background.backgroundImageSize);
+      resolution = resolution || 1;
+      backgroundImageSize.x *= resolution;
+      backgroundImageSize.y *= resolution;
+      if (_this.documentData.background.useColorOnly === true) {
+        context.fillStyle = _this.documentData.background.backgroundColor || "black";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        resolve();
+      } else if (_this.documentData.background.backgroundImage.classList && _this.documentData.background.backgroundImage.classList.contains('img-source')) {
+        context.drawImage(_this.documentData.background.backgroundImage, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
+        resolve();
+      } else if (_this.documentData.background.backgroundImage.name !== '') {
+        // const ImageLoadPromise = new Promise((resolve, reject) => {
+        var reader = new FileReader();
+        var img;
+        var docData = _this.documentData;
+        reader.onload = function (event) {
+          docData.background.backgroundImageFile = event.target.result;
+          img = new Image();
+          img.onload = function () {
+            context.drawImage(img, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
+            resolve(img);
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(_this.documentData.background.backgroundImage);
+        // });
+        // ImageLoadPromise.then(img => {
+        //   this.drawForeground(canvas, context);
+        // })
+      } else if (_this.documentData.background.backgroundImageFile !== null) {
+        var img;
+        img = new Image();
         img.onload = function () {
           context.drawImage(img, 0, 0, backgroundImageSize.x, backgroundImageSize.y);
+          resolve(img);
         };
         img.src = event.target.result;
-      };
-      reader.readAsDataURL(this.documentData.background.backgroundImage);
-      context.drawImage(this.documentData.background.backgroundImage, backgroundImageSize.x, backgroundImageSize.y, backgroundImageSize.x, backgroundImageSize.y);
-    }
+      } else {
+        console.log(_this.documentData.background.backgroundImage);
+      }
+    });
+    drawBgPromise.then(function () {
+      console.log('done drawing bg');
+      if (_this.documentData.backgroundGraphic.drawBgGraphic === true) {
+        console.log('drawBackgroundGraphic');
+        _this.drawBackgroundGraphic(_this.canvasElem, _this.canvasContext);
+      } else {
+        console.log('drawForeground');
+        _this.drawForeground(_this.canvasElem, _this.canvasContext);
+      }
+    });
+  },
+  drawForeground: function drawForeground(canvas, context) {
+    var _this2 = this;
+
+    var drawFgPromise = new Promise(function (resolve, reject) {
+      var foregroundImageSize;
+      if (_this2.documentData.foreground.foregroundImage) {
+        console.log(_this2.documentData.foreground);
+        foregroundImageSize = Object.assign({}, {
+          x: _this2.documentData.foreground.foregroundImage.width,
+          y: _this2.documentData.foreground.foregroundImage.height
+        });
+        var scale = _this2.documentData.foreground.foregroundImageSize.scale || 100;
+        scale = scale / 100;
+        foregroundImageSize.x = _this2.documentData.foreground.foregroundImage.width * scale;
+        foregroundImageSize.y = _this2.documentData.foreground.foregroundImage.height * scale;
+      }
+
+      if (_this2.documentData.foreground.foregroundImage && _this2.documentData.foreground.foregroundImage.classList && _this2.documentData.foreground.foregroundImage.classList.contains('img-source-fg')) {
+        _this2.documentData.foreground.foregroundImageFile = null;
+        context.drawImage(_this2.documentData.foreground.foregroundImage, _this2.documentData.foreground.foregroundImagePosition.x, _this2.documentData.foreground.foregroundImagePosition.y, foregroundImageSize.x, foregroundImageSize.y);
+        resolve();
+      } else if (_this2.documentData.foreground.foregroundImageFile !== null) {
+        console.log('handle draw file', _this2.documentData.foreground);
+        foregroundImageSize.x = _this2.documentData.foreground.foregroundImageSize.width * scale;
+        foregroundImageSize.y = _this2.documentData.foreground.foregroundImageSize.height * scale;
+        var img;
+        var docData = _this2.documentData;
+        img = new Image();
+        img.onload = function () {
+          context.drawImage(img, docData.foreground.foregroundImagePosition.x, docData.foreground.foregroundImagePosition.y, foregroundImageSize.x, foregroundImageSize.y);
+          resolve(img);
+        };
+        img.src = _this2.documentData.foreground.foregroundImageFile;
+      } else if (_this2.documentData.foreground.foregroundImage && _this2.documentData.foreground.foregroundImage.name !== '') {
+        console.log('file upload');
+        var reader = new FileReader();
+        var img;
+        var docData = _this2.documentData;
+        reader.onload = function (event) {
+          docData.foreground.foregroundImageFile = event.target.result;
+          img = new Image();
+          img.onload = function () {
+            docData.foreground.foregroundImageSize.width = this.width;
+            docData.foreground.foregroundImageSize.height = this.height;
+            context.drawImage(img, docData.foreground.foregroundImagePosition.x, docData.foreground.foregroundImagePosition.y, docData.foreground.foregroundImageSize.width, docData.foreground.foregroundImageSize.height);
+            resolve(img);
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(_this2.documentData.foreground.foregroundImage);
+      }
+      resolve();
+    });
+    drawFgPromise.then(function (img) {
+      if (_this2.documentData.foregroundGraphic.drawFgGraphic === true) {
+        _this2.drawForegroundGraphic(_this2.canvasElem, _this2.canvasContext);
+      }
+    });
   },
   refreshCanvas: function refreshCanvas(canvas, context, resolution) {
     context = context || this.canvasContext;
@@ -652,7 +1009,143 @@ var App = {
     resolution = resolution || 1;
     var backgroundImageSize = this.documentData.background.backgroundImageSize;
     this.drawBackground(canvas, context, resolution);
-    // create functions for each layer and pile on top of eachother
+  },
+  drawBackgroundGraphic: function drawBackgroundGraphic(canvas, context) {
+    var scale = this.documentData.backgroundGraphic.backgroundGraphicImageSize.scale / 100;
+    var backgroundGraphicWidth = this.documentData.backgroundGraphic.backgroundGraphicImageSize.x * scale;
+    var backgroundGraphicHeight = this.documentData.backgroundGraphic.backgroundGraphicImageSize.y * scale;
+    if (this.documentData.backgroundGraphic.backgroundGraphicRotation !== 0) {
+      // store width and height for easier translation
+      var width = backgroundGraphicWidth;
+      var height = backgroundGraphicHeight;
+      context.save(); // save current state
+      // check if opacity is also set
+      if (this.documentData.backgroundGraphic.backgroundGraphicOpacity !== 1) {
+        context.globalAlpha = this.documentData.backgroundGraphic.backgroundGraphicOpacity;
+      }
+      context.translate(width / 2, height / 2);
+      context.rotate(this.convertToRadians(this.documentData.backgroundGraphic.backgroundGraphicRotation));
+      context.translate(width / -2, height / -2);
+
+      context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, backgroundGraphicWidth, backgroundGraphicHeight);
+      context.restore();
+    } else if (this.documentData.backgroundGraphic.backgroundGraphicOpacity !== 1) {
+      // only opacity is set
+      context.save();
+      context.globalAlpha = this.documentData.backgroundGraphic.backgroundGraphicOpacity;
+      context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, backgroundGraphicWidth, backgroundGraphicHeight);
+      context.restore();
+    } else {
+      // no opacity change or rotation
+      context.drawImage(this.documentData.backgroundGraphic.backgroundGraphicImage, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x, this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y, backgroundGraphicWidth, backgroundGraphicHeight);
+    }
+    this.drawForeground(canvas, context);
+  },
+  drawForegroundGraphic: function drawForegroundGraphic(canvas, context) {
+    var scale = this.documentData.foregroundGraphic.foregroundGraphicImageSize.scale / 100;
+    var foregroundGraphicWidth = this.documentData.foregroundGraphic.foregroundGraphicImageSize.x * scale;
+    var foregroundGraphicHeight = this.documentData.foregroundGraphic.foregroundGraphicImageSize.y * scale;
+    if (this.documentData.foregroundGraphic.foregroundGraphicRotation !== 0) {
+      // store width and height for easier translation
+      var width = foregroundGraphicWidth;
+      var height = foregroundGraphicHeight;
+      context.save(); // save current state
+      // check if opacity is also set
+      if (this.documentData.foregroundGraphic.foregroundGraphicOpacity !== 1) {
+        context.globalAlpha = this.documentData.foregroundGraphic.foregroundGraphicOpacity;
+      }
+      context.translate(width / 2, height / 2);
+      context.rotate(this.convertToRadians(this.documentData.foregroundGraphic.foregroundGraphicRotation));
+      context.translate(width / -2, height / -2);
+
+      context.drawImage(this.documentData.foregroundGraphic.foregroundGraphicImage, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y, foregroundGraphicWidth, foregroundGraphicHeight);
+      context.restore();
+    } else if (this.documentData.foregroundGraphic.foregroundGraphicOpacity !== 1) {
+      context.save();
+      context.globalAlpha = this.documentData.foregroundGraphic.foregroundGraphicOpacity;
+      context.drawImage(this.documentData.foregroundGraphic.foregroundGraphicImage, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y, foregroundGraphicWidth, foregroundGraphicHeight);
+      context.restore();
+    } else {
+      // no opacity change
+      context.drawImage(this.documentData.foregroundGraphic.foregroundGraphicImage, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x, this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y, foregroundGraphicWidth, foregroundGraphicHeight);
+    }
+  },
+  handleMouseDown: function handleMouseDown(e) {
+    this.documentData.canMouseX = event.clientX;
+    this.documentData.canMouseY = event.clientY;
+    switch (this.selectedLayer) {
+      case 'foreground':
+        this.documentData.foreground.startingPosition = {
+          x: this.documentData.foreground.foregroundImagePosition.x,
+          y: this.documentData.foreground.foregroundImagePosition.y
+        };
+        break;
+      case 'fg-graphic':
+        this.documentData.foregroundGraphic.startingPosition = {
+          x: this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x,
+          y: this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y
+        };
+        break;
+      case 'bg-graphic':
+        this.documentData.backgroundGraphic.startingPosition = {
+          x: this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x,
+          y: this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y
+        };
+        break;
+      default:
+        break;
+    }
+    this.isDragging = true;
+  },
+  handleMouseUp: function handleMouseUp(e) {
+    this.documentData.canMouseX = null;
+    this.documentData.canMouseY = null;
+    this.isDragging = false;
+  },
+  handleMouseMove: function handleMouseMove(e) {
+    if (this.isDragging) {
+      // find selectedLayer and act accordingly
+      switch (this.selectedLayer) {
+        case 'foreground':
+          var deltaX = this.documentData.foreground.foregroundImagePosition.x + this.documentData.canMouseX;
+          var deltaY = this.documentData.foreground.foregroundImagePosition.y + this.documentData.canMouseY;
+          this.documentData.foreground.foregroundImagePosition.x = e.clientX - this.documentData.canMouseX + this.documentData.foreground.startingPosition.x;
+          this.documentData.foreground.foregroundImagePosition.y = e.clientY - this.documentData.canMouseY + this.documentData.foreground.startingPosition.y;
+          console.log(e.clientX - this.documentData.canMouseX, e.clientY - this.documentData.canMouseY);
+          this.refreshCanvas(this.canvasElem, this.canvasContext);
+          break;
+        case 'bg-graphic':
+          var deltaX = this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x + this.documentData.canMouseX;
+          var deltaY = this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y + this.documentData.canMouseY;
+          this.documentData.backgroundGraphic.backgroundGraphicImagePosition.x = e.clientX - this.documentData.canMouseX + this.documentData.backgroundGraphic.startingPosition.x;
+          this.documentData.backgroundGraphic.backgroundGraphicImagePosition.y = e.clientY - this.documentData.canMouseY + this.documentData.backgroundGraphic.startingPosition.y;
+          this.refreshCanvas(this.canvasElem, this.canvasContext);
+          break;
+        case 'fg-graphic':
+          var deltaX = this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x + this.documentData.canMouseX;
+          var deltaY = this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y + this.documentData.canMouseY;
+          this.documentData.foregroundGraphic.foregroundGraphicImagePosition.x = e.clientX - this.documentData.canMouseX + this.documentData.foregroundGraphic.startingPosition.x;
+          this.documentData.foregroundGraphic.foregroundGraphicImagePosition.y = e.clientY - this.documentData.canMouseY + this.documentData.foregroundGraphic.startingPosition.y;
+          this.refreshCanvas(this.canvasElem, this.canvasContext);
+          break;
+        default:
+          break;
+      }
+    }
+  },
+  handleMouseOut: function handleMouseOut(e) {
+    this.isDragging = false;
+  },
+  startDownload: function startDownload() {
+    // test downloadjs
+    // download("hello world", "dlText.txt", "text/plain");
+    (0, _downloadjs2.default)(this.canvasElem.toDataURL('image/png'), '' + this.fileBaseName + Date.now() + '.png', 'image/png');
+  },
+  convertToRadians: function convertToRadians(degree) {
+    // 15deg = pi/12
+    var a = degree / 15;
+    var radianValue = a * (Math.PI / 12);
+    return radianValue;
   }
 };
 
